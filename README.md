@@ -1,5 +1,7 @@
 # 钢铁战线3 · 铁甲猎手（IronWar WW2）
 
+**线上版**：https://ironwar-ww2.pages.dev （Cloudflare Pages，main 分支内容）
+
 Three.js + WebAudio 的 3D 二战坦克对战网页游戏。无血条·乘员+模块制伤害模型，
 拟真弹道（高斯散布/抛物线），两层点亮侦查，分层 AI（排级大脑+怀疑度地图），可破坏场景。
 

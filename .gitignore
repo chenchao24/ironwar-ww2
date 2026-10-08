@@ -5,6 +5,7 @@ node_modules/*
 # ═══ 本地备份与归档（不入库） ═══
 _backup_*/
 _archive/
+_deploy/
 
 # ═══ 原始大模型（不入库；入库的是压缩版） ═══
 # model/ 原包（361MB）→ 压缩版在 model/opt/（124MB，scripts/optimize-glb.mjs 产物）
