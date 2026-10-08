@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>步兵 v2 Demo — 程序化二战士兵（德/美/苏）</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #b8bec6; }
+  #ui {
+    position: fixed; left: 12px; top: 12px; z-index: 10;
+    font: 12px/1.6 "Microsoft YaHei", sans-serif; color: #e8eaec;
+    background: rgba(20,24,28,0.66); padding: 10px 12px; border-radius: 8px; max-width: 240px;
+  }
+  #ui h1 { font-size: 14px; margin: 0 0 2px; color: #ffd890; }
+  #ui .sub { font-size: 11px; color: #aab; margin-bottom: 8px; }
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  button { background: #39412f; color: #d6dcc8; border: 1px solid #5c684c; border-radius: 5px;
+    padding: 5px 2px; font-size: 11px; cursor: pointer; }
+  button:hover { background: #4a5439; }
+  button.on { background: #6b7a4e; color: #fff; }
+  #stats { position: fixed; top: 12px; right: 12px; z-index: 10; text-align: right;
+    font: 12px/1.6 monospace; color: #e8eaec; background: rgba(20,24,28,0.66);
+    padding: 8px 12px; border-radius: 6px; white-space: pre; pointer-events: none; }
+  #hint { position: fixed; right: 12px; bottom: 10px; z-index: 10; font: 11px/1.5 sans-serif;
+    color: #dde; background: rgba(20,24,28,0.6); padding: 6px 10px; border-radius: 6px; }
+</style>
+</head>
+<body>
+<div id="ui">
+  <h1>步兵 v2 Demo</h1>
+  <div class="sub">程序化士兵（德/美/苏）· 骨骼合并 · IK · 雪地罩衫</div>
+  <div class="btns" id="animBtns"></div>
+  <div style="margin-top:6px;font-size:11px;color:#9fb" id="animHint">姿态作用于前景三兵（德/美/苏）</div>
+</div>
+<div id="stats"></div>
+<div id="hint">左键点地面=炮击（内圈死/外圈卧倒4s）· 点兵=机枪命中 · 拖拽旋转 · 滚轮缩放</div>
+<script type="importmap">
+{
+  "imports": {
+    "three": "./node_modules/three/build/three.module.js",
+    "three/addons/": "./node_modules/three/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="js/infantry2-demo.js"></script>
+</body>
+</html>

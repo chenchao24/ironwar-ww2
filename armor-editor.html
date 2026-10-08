@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>装甲 & 命中模型编辑器 — 自由板 / 乘员 / 部件</title>
+<link rel="icon" href="data:,">
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #10141a;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
+  #c { position: absolute; left: 280px; right: 400px; top: 0; bottom: 0; width: auto; height: 100%; display: block; }
+  /* ── 左栏：对象树 ── */
+  #treePanel {
+    position: fixed; top: 0; left: 0; width: 280px; height: 100%; overflow-y: auto;
+    background: rgba(12,16,22,0.92); border-right: 1px solid rgba(255,255,255,0.1);
+    color: #d7dde3; font-size: 12px; z-index: 10; padding: 10px 10px 40px; box-sizing: border-box;
+  }
+  #treePanel h2 { font-size: 13px; color: #e0a24a; margin: 2px 0 8px; letter-spacing: 1px; }
+  .toolbar { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+  .toolbar button {
+    font-family: inherit; font-size: 12px; cursor: pointer; color: #cfd8df;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 5px; padding: 5px 10px;
+  }
+  .toolbar button:hover { border-color: #e0a24a; color: #ffd894; }
+  .toolbar button.on { background: rgba(224,162,74,0.28); border-color: #e0a24a; color: #ffd894; }
+  .tnode { padding: 3px 6px; border-radius: 4px; cursor: pointer; user-select: none; }
+  .tnode:hover { background: rgba(255,255,255,0.06); }
+  .tnode.sel { background: rgba(0,229,255,0.18); color: #7deeff; }
+  .tnode.l1 { font-weight: 700; color: #e8d9b0; margin-top: 6px; }
+  .tnode.l2 { padding-left: 16px; color: #b8c4cf; }
+  .tnode.l3 { padding-left: 30px; }
+  .tnode .tag { font-size: 10px; color: #7d8894; margin-left: 5px; }
+  .addbtn { color: #52b06a; cursor: pointer; padding: 2px 0 2px 30px; font-size: 11px; }
+  .addbtn:hover { color: #9fe0b4; }
+  /* ── 右栏：调整面板 ── */
+  #propsPanel {
+    position: fixed; top: 0; right: 0; width: 400px; height: 100%; overflow-y: auto;
+    background: rgba(12,16,22,0.92); border-left: 1px solid rgba(255,255,255,0.1);
+    color: #d7dde3; font-size: 12px; z-index: 10; padding: 10px 14px 40px; box-sizing: border-box;
+  }
+  #propsPanel h2 { font-size: 13px; color: #e0a24a; margin: 2px 0 8px; letter-spacing: 1px; }
+  .toolbar button.primary { background: rgba(82,176,106,0.2); border-color: #52b06a; color: #9fe0b4; }
+  #props { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 8px; }
+  #props .ptitle { color: #7deeff; font-weight: 700; margin-bottom: 8px; }
+  .frow { display: grid; grid-template-columns: 86px 1fr 54px 84px; align-items: center; gap: 6px; margin: 5px 0; }
+  .frow label { color: #8b97a3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .frow input[type=range] { width: 100%; height: 18px; accent-color: #e0a24a; }
+  .frow input[type=number], .frow input[type=text], .frow select {
+    width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.07); color: #e8eef4;
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 3px 5px; font-size: 12px;
+  }
+  .stepper { display: flex; gap: 2px; }
+  .stepper button {
+    flex: 1; font-size: 10px; padding: 3px 0; cursor: pointer; color: #cfd8df;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 3px;
+  }
+  .stepper button:hover { border-color: #e0a24a; color: #ffd894; }
+  .crow { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+  .delbtn { background: rgba(224,82,82,0.16); border: 1px solid rgba(224,82,82,0.5); color: #ff9a9a;
+    border-radius: 5px; padding: 4px 12px; cursor: pointer; font-size: 12px; }
+  .delbtn:hover { background: rgba(224,82,82,0.3); }
+  .hint { color: #66727e; font-size: 11px; line-height: 1.6; margin: 6px 0; }
+  /* 导出浮层 */
+  #exportMask { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50; display: none;
+    align-items: center; justify-content: center; }
+  #exportBox { width: 720px; max-width: 92vw; background: #131a22; border: 1px solid #2a3542;
+    border-radius: 10px; padding: 14px; }
+  #exportBox textarea { width: 100%; height: 46vh; box-sizing: border-box; background: #0b1016;
+    color: #b8e6c8; border: 1px solid #2a3542; border-radius: 6px; font: 11px/1.5 Consolas, monospace; padding: 8px; }
+  #exportBox .row { display: flex; gap: 8px; margin-top: 10px; justify-content: flex-end; }
+  #exportBox button { font-size: 12px; padding: 6px 14px; cursor: pointer; border-radius: 5px;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14); color: #cfd8df; }
+  #exportBox button:hover { border-color: #e0a24a; color: #ffd894; }
+  #toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 60;
+    background: rgba(30,40,30,0.92); color: #9fe0b4; border: 1px solid #52b06a; border-radius: 6px;
+    padding: 7px 16px; font-size: 12px; display: none; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "./node_modules/three/build/three.module.js",
+    "three/addons/": "./node_modules/three/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<!-- 左栏：对象树 -->
+<div id="treePanel">
+  <h2>模型对象</h2>
+  <div class="toolbar" id="tankBar"></div>
+  <div class="hint">点击树节点或 3D 模型选中；右侧面板调整。</div>
+  <div class="tree" id="tree"></div>
+</div>
+
+<!-- 右栏：调整面板 -->
+<div id="propsPanel">
+  <h2>属性调整</h2>
+  <div class="toolbar">
+    <button id="btnExport" class="primary">一键导出参数</button>
+    <button id="btnReset">还原原值</button>
+  </div>
+  <div class="toolbar">
+    <button id="btnHideModel">隐藏坦克模型</button>
+    <button id="btnHideLabels" class="on">显示文字标签</button>
+  </div>
+  <div id="props"></div>
+</div>
+
+<div id="exportMask"><div id="exportBox">
+  <div style="color:#e0a24a;font-weight:700;margin-bottom:8px">导出参数（config.js 片段）</div>
+  <textarea id="exportText" readonly></textarea>
+  <div class="row">
+    <button id="btnCopy">复制到剪贴板</button>
+    <button id="btnDownload">下载 .js 文件</button>
+    <button id="btnCloseExp">关闭</button>
+  </div>
+</div></div>
+<div id="toast"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { TANKS } from './js/config.js';
+import { buildArmorOverlay, MOD_NAMES, FACE_NAMES } from './js/armorviz.js';
+
+/* ═══════════ 状态 ═══════════ */
+let tankId = 'tiger1';
+let E = null;            // { armorModel, internal } 深拷贝（编辑对象）
+let sel = null;          // 当前选中 { kind, obj, label, ... }
+let showModel = true, showLabels = true;
+
+function deepEdit(id) {
+  const c = TANKS[id];
+  return JSON.parse(JSON.stringify({ armorModel: c.armorModel, internal: c.internal }));
+}
+
+/* ═══════════ 3D 场景 ═══════════ */
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = true;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x182028);
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 200);
+camera.position.set(7.5, 4.5, 8.5);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.target.set(0, 1.4, 0.3);
+scene.add(new THREE.HemisphereLight(0xcfd8e4, 0x4a4a3a, 1.3));
+const sun = new THREE.DirectionalLight(0xfff0d5, 2.6);
+sun.position.set(6, 10, 4);
+sun.castShadow = true;
+scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshLambertMaterial({ color: 0x3a4034 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
+scene.add(ground);
+scene.add(new THREE.GridHelper(24, 24, 0x556070, 0x333c48));
+
+function resize() {
+  const w = innerWidth - 680, h = innerHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+resize();
+
+/* ═══════════ 模型加载 & overlay 重建 ═══════════ */
+let modelRoot = null, overlayRoot = null, pickables = [];
+function loadModel(id) {
+  if (modelRoot) scene.remove(modelRoot);
+  new GLTFLoader().load(TANKS[id].model, (gltf) => {
+    modelRoot = gltf.scene;
+    // 模型朝向与游戏内一致（tank.js 朝向预烘焙的纯旋转等效；装甲板图是烘焙后 +Z 系）
+    const cfg = TANKS[id];
+    if (cfg.forwardAxis === '+x') modelRoot.rotation.y = -Math.PI / 2;
+    else if (cfg.forwardAxis === '+y') modelRoot.rotation.set(-Math.PI / 2, Math.PI, 0, 'YXZ');
+    if (cfg.bakeY180) modelRoot.rotation.y += Math.PI;
+    if (cfg.bakeX90) modelRoot.rotation.x += Math.PI / 2;
+    modelRoot.traverse(o => { if (o.isMesh) o.castShadow = true; });
+    modelRoot.visible = showModel;
+    scene.add(modelRoot);
+  });
+}
+function rebuildOverlay() {
+  if (overlayRoot) scene.remove(overlayRoot);
+  const r = buildArmorOverlay(E.armorModel, E.internal, { sel, showLabels, onPick: true });
+  overlayRoot = r.group;
+  pickables = r.pickables;
+  scene.add(overlayRoot);
+}
+
+/* ═══════════ 左栏树 ═══════════ */
+const treeEl = document.getElementById('tree');
+function isSel(ref) { return sel && sel.kind === ref.kind && sel.obj === ref.obj; }
+function buildTree() {
+  treeEl.innerHTML = '';
+  const addNode = (text, ref, cls = 'l1', tag = '') => {
+    const d = document.createElement('div');
+    d.className = `tnode ${cls}` + (ref && isSel(ref) ? ' sel' : '');
+    d.innerHTML = text + (tag ? `<span class="tag">${tag}</span>` : '');
+    if (ref) d.onclick = () => { sel = ref; refresh(); };
+    treeEl.appendChild(d);
+    return d;
+  };
+  for (const partKey of ['hull', 'turret']) {
+    const part = E.armorModel[partKey];
+    const partName = partKey === 'hull' ? '车体判定盒' : '炮塔判定盒';
+    addNode(partName + '（参照框）', { kind: 'box', obj: part.box, label: partName }, 'l1');
+    const plates = part.plates || [];
+    // 按 face 分组
+    const byFace = {};
+    plates.forEach((p, pi) => { (byFace[p.face || 'misc'] = byFace[p.face || 'misc'] || []).push([p, pi]); });
+    for (const faceKey of Object.keys(byFace)) {
+      addNode(FACE_NAMES[faceKey] || faceKey, null, 'l2', `${byFace[faceKey].length} 板`);
+      byFace[faceKey].forEach(([p, pi]) => {
+        addNode(`${p.name}`, { kind: 'plate', obj: p, label: `${partName}·${FACE_NAMES[faceKey] || ''}板`, partKey, index: pi }, 'l3',
+          `${p.t}mm${p.weak ? ' 弱' : ''}${p.mirror ? ' 镜' : ''}`);
+      });
+    }
+    const ab = document.createElement('div');
+    ab.className = 'addbtn';
+    ab.textContent = '+ 添加板（自由四边形）';
+    ab.onclick = () => {
+      const b = part.box;
+      part.plates.push({
+        name: '新板', face: 'misc', t: 50,
+        pos: [(b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, b.z1], size: [1, 0.5], rot: [0, 0, 0],
+      });
+      refresh();
+    };
+    treeEl.appendChild(ab);
+    (part.extras || []).forEach((ex, ei) => {
+      addNode(`附加盒·${ex.name}`, { kind: 'extra', obj: ex, label: `${partName}·附加盒`, partKey, index: ei }, 'l2', `${ex.t}mm`);
+    });
+    const ab2 = document.createElement('div');
+    ab2.className = 'addbtn';
+    ab2.textContent = '+ 添加附加盒（车长塔等）';
+    ab2.onclick = () => {
+      part.extras = part.extras || [];
+      part.extras.push({ box: { x0: -0.3, x1: 0.3, y0: part.box.y1, y1: part.box.y1 + 0.25, z0: -0.3, z1: 0.3 }, t: 50, tilt: 0, name: '新附加盒' });
+      refresh();
+    };
+    treeEl.appendChild(ab2);
+  }
+  addNode('乘员', null, 'l1');
+  E.internal.crew.forEach((c, i) =>
+    addNode(c.name, { kind: 'crew', obj: c, label: `乘员·${c.name}`, index: i }, 'l3', `r=${c.r}`));
+  addNode('模块', null, 'l1');
+  for (const key in E.internal.modules) {
+    E.internal.modules[key].forEach((s, i) =>
+      addNode(`${MOD_NAMES[key] || key}${E.internal.modules[key].length > 1 ? ' ' + (i + 1) : ''}`,
+        { kind: 'module', obj: s, label: `模块·${MOD_NAMES[key] || key}`, modKey: key, index: i }, 'l3', `r=${s.r}`));
+  }
+}
+
+/* ═══════════ 右栏属性编辑器 ═══════════ */
+const propsEl = document.getElementById('props');
+function clampNum(v, min, max) { return Math.min(max, Math.max(min, isNaN(v) ? min : v)); }
+function numRow(label, get, set, min, max, step) {
+  const row = document.createElement('div');
+  row.className = 'frow';
+  const lab = document.createElement('label');
+  lab.textContent = label;
+  const slider = document.createElement('input');
+  slider.type = 'range'; slider.min = min; slider.max = max; slider.step = step;
+  const num = document.createElement('input');
+  num.type = 'number'; num.min = min; num.max = max; num.step = step;
+  const st = document.createElement('div');
+  st.className = 'stepper';
+  const fine = step, coarse = step * 10;
+  const fmt = (v) => (+v.toFixed(4)).toString();
+  const sync = (v) => { slider.value = v; num.value = fmt(v); };
+  sync(get());
+  slider.oninput = () => { set(+slider.value); num.value = fmt(+slider.value); rebuildOverlay(); };
+  num.onchange = () => { const v = clampNum(+num.value, min, max); set(v); sync(v); rebuildOverlay(); };
+  for (const [txt, dv] of [['--', -coarse], ['-', -fine], ['+', fine], ['++', coarse]]) {
+    const b = document.createElement('button');
+    b.textContent = txt;
+    b.title = (dv > 0 ? '+' : '') + dv;
+    b.onclick = () => {
+      const v = clampNum(+(get() + dv).toFixed(4), min, max);
+      set(v); sync(v); rebuildOverlay();
+    };
+    st.appendChild(b);
+  }
+  row.append(lab, slider, num, st);
+  return row;
+}
+function textRow(label, get, set) {
+  const row = document.createElement('div');
+  row.className = 'frow';
+  const lab = document.createElement('label');
+  lab.textContent = label;
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.value = get();
+  inp.onchange = () => { set(inp.value); refresh(); };
+  row.append(lab, inp, document.createElement('span'), document.createElement('span'));
+  return row;
+}
+function selectRow(label, get, set, options) {
+  const row = document.createElement('div');
+  row.className = 'frow';
+  const lab = document.createElement('label');
+  lab.textContent = label;
+  const inp = document.createElement('select');
+  for (const [val, txt] of options) {
+    const op = document.createElement('option');
+    op.value = val; op.textContent = txt;
+    if (val === get()) op.selected = true;
+    inp.appendChild(op);
+  }
+  inp.onchange = () => { set(inp.value); refresh(); };
+  row.append(lab, inp, document.createElement('span'), document.createElement('span'));
+  return row;
+}
+function checkRow(label, get, set) {
+  const row = document.createElement('div');
+  row.className = 'crow';
+  const inp = document.createElement('input');
+  inp.type = 'checkbox'; inp.checked = get();
+  inp.onchange = () => { set(inp.checked); refresh(); };
+  const lab = document.createElement('label');
+  lab.textContent = label;
+  row.append(inp, lab);
+  return row;
+}
+function delRow(text, fn) {
+  const row = document.createElement('div');
+  row.className = 'crow';
+  const b = document.createElement('button');
+  b.className = 'delbtn'; b.textContent = text;
+  b.onclick = () => { fn(); sel = null; refresh(); };
+  row.append(b);
+  return row;
+}
+
+function buildProps() {
+  propsEl.innerHTML = '';
+  if (!sel) { propsEl.innerHTML = '<div class="hint">未选中对象。点击 3D 模型或左侧树节点。</div>'; return; }
+  const title = document.createElement('div');
+  title.className = 'ptitle';
+  title.textContent = sel.label;
+  propsEl.appendChild(title);
+  const o = sel.obj;
+
+  if (sel.kind === 'box') {
+    for (const [k, lab] of [['x0', '左 x0'], ['x1', '右 x1'], ['y0', '底 y0'], ['y1', '顶 y1'], ['z0', '尾 z0'], ['z1', '首 z1']]) {
+      propsEl.appendChild(numRow(lab, () => o[k], v => { o[k] = v; }, -5, 5, 0.01));
+    }
+    propsEl.insertAdjacentHTML('beforeend', '<div class="hint">判定盒仅作参照/宽相。板是真正装甲面，应略小于可视车体。局部系：+x 右 / +y 上 / +z 首。</div>');
+  } else if (sel.kind === 'plate') {
+    o.rot = o.rot || [0, 0, 0];
+    propsEl.appendChild(textRow('名称', () => o.name, v => { o.name = v; }));
+    propsEl.appendChild(selectRow('分组 face', () => o.face || 'misc', v => { o.face = v; },
+      [['front', '正面'], ['rear', '尾部'], ['side', '侧面'], ['top', '顶部'], ['misc', '杂项']]));
+    propsEl.appendChild(numRow('厚度 t (mm)', () => o.t, v => { o.t = v; }, 0, 300, 0.5));
+    propsEl.insertAdjacentHTML('beforeend', '<div class="hint">— 位置（中心）—</div>');
+    propsEl.appendChild(numRow('pos x（左右）', () => o.pos[0], v => { o.pos[0] = v; }, -5, 5, 0.01));
+    propsEl.appendChild(numRow('pos y（上下）', () => o.pos[1], v => { o.pos[1] = v; }, -5, 5, 0.01));
+    propsEl.appendChild(numRow('pos z（尾首）', () => o.pos[2], v => { o.pos[2] = v; }, -5, 5, 0.01));
+    propsEl.insertAdjacentHTML('beforeend', '<div class="hint">— 尺寸 —</div>');
+    propsEl.appendChild(numRow('宽 w (m)', () => o.size[0], v => { o.size[0] = v; }, 0.02, 5, 0.01));
+    propsEl.appendChild(numRow('高 h (m)', () => o.size[1], v => { o.size[1] = v; }, 0.02, 5, 0.01));
+    propsEl.insertAdjacentHTML('beforeend', '<div class="hint">— 旋转（°）—</div>');
+    propsEl.appendChild(numRow('rx（俯仰）', () => o.rot[0], v => { o.rot[0] = v; }, -90, 90, 0.5));
+    propsEl.appendChild(numRow('ry（左右）', () => o.rot[1], v => { o.rot[1] = v; }, -180, 180, 0.5));
+    propsEl.appendChild(numRow('rz（滚转）', () => o.rot[2] || 0, v => { o.rot[2] = v; }, -90, 90, 0.5));
+    propsEl.appendChild(checkRow('弱点（品红描边）', () => !!o.weak, v => { o.weak = v; }));
+    propsEl.appendChild(checkRow('行走部（击穿断履带）', () => !!o.track, v => { o.track = v; }));
+    propsEl.appendChild(checkRow('±x 镜像（侧板左右各一）', () => !!o.mirror, v => { o.mirror = v; }));
+    propsEl.appendChild(delRow('删除此板', () => { E.armorModel[sel.partKey].plates.splice(sel.index, 1); }));
+    propsEl.insertAdjacentHTML('beforeend', '<div class="hint">rot 约定：rx>0 板上缘向 +z（车头）倾；ry=±90° 立成侧板。镜像板的 ry/rz 自动取反。</div>');
+  } else if (sel.kind === 'extra') {
+    propsEl.appendChild(textRow('名称', () => o.name, v => { o.name = v; }));
+    propsEl.appendChild(numRow('厚度 t (mm)', () => o.t, v => { o.t = v; }, 0, 300, 0.5));
+    for (const [k, lab] of [['x0', 'x0'], ['x1', 'x1'], ['y0', 'y0'], ['y1', 'y1'], ['z0', 'z0'], ['z1', 'z1']]) {
+      propsEl.appendChild(numRow(lab, () => o.box[k], v => { o.box[k] = v; }, -5, 5, 0.01));
+    }
+    propsEl.appendChild(delRow('删除附加盒', () => { E.armorModel[sel.partKey].extras.splice(sel.index, 1); }));
+  } else {
+    if (sel.kind === 'crew') propsEl.appendChild(textRow('名称', () => o.name, v => { o.name = v; }));
+    propsEl.appendChild(numRow('x（左右）', () => o.x, v => { o.x = v; }, -5, 5, 0.01));
+    propsEl.appendChild(numRow('y（上下）', () => o.y, v => { o.y = v; }, -5, 5, 0.01));
+    propsEl.appendChild(numRow('z（尾首）', () => o.z, v => { o.z = v; }, -5, 5, 0.01));
+    propsEl.appendChild(numRow('半径 r', () => o.r, v => { o.r = v; }, 0.05, 1.5, 0.01));
+    propsEl.insertAdjacentHTML('beforeend', '<div class="hint">球体判定区应整体收在装甲板围成的空间内（露在外面 = 弹片不穿板即可命中）。</div>');
+  }
+}
+
+/* ═══════════ 3D 点选 ═══════════ */
+const raycaster = new THREE.Raycaster();
+canvas.addEventListener('pointerdown', (ev) => {
+  const rect = canvas.getBoundingClientRect();
+  const nx = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+  const ny = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera({ x: nx, y: ny }, camera);
+  const hits = raycaster.intersectObjects(pickables, false);
+  if (hits.length) {
+    sel = hits[0].object.userData.ref;
+    refresh();
+  }
+});
+
+/* ═══════════ 导出 ═══════════ */
+function jsExport() {
+  const c = TANKS[tankId];
+  const internalOut = { ...E.internal, ringY: c.internal.ringY, trackX: c.internal.trackX, trackY: c.internal.trackY };
+  return `// ${c.name}（${tankId}）— 装甲 & 命中模型参数（编辑器导出 ${new Date().toISOString().slice(0, 16)}）
+armorModel: ${fmtJs(E.armorModel)},
+internal: ${fmtJs(internalOut)},`;
+}
+function fmtJs(v, ind = 0) {
+  const pad = '  '.repeat(ind), pad2 = '  '.repeat(ind + 1);
+  if (Array.isArray(v)) {
+    if (v.every(x => typeof x === 'number')) return '[' + v.map(x => x).join(', ') + ']';
+    if (!v.length) return '[]';
+    return '[\n' + v.map(x => pad2 + fmtJs(x, ind + 1)).join(',\n') + '\n' + pad + ']';
+  }
+  if (v && typeof v === 'object') {
+    const es = Object.entries(v).filter(([, x]) => x !== undefined && x !== false && x !== '');
+    if (!es.length) return '{}';
+    return '{\n' + es.map(([k, x]) => pad2 + k + ': ' + fmtJs(x, ind + 1)).join(',\n') + '\n' + pad + '}';
+  }
+  if (typeof v === 'string') return `'${v}'`;
+  return String(v);
+}
+document.getElementById('btnExport').onclick = () => {
+  document.getElementById('exportText').value = jsExport();
+  document.getElementById('exportMask').style.display = 'flex';
+};
+document.getElementById('btnCloseExp').onclick = () => document.getElementById('exportMask').style.display = 'none';
+document.getElementById('btnCopy').onclick = async () => {
+  await navigator.clipboard.writeText(document.getElementById('exportText').value);
+  toast('已复制到剪贴板');
+};
+document.getElementById('btnDownload').onclick = () => {
+  const blob = new Blob([document.getElementById('exportText').value], { type: 'text/javascript' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${tankId}-armor.js`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已下载 ' + a.download);
+};
+document.getElementById('btnReset').onclick = () => {
+  E = deepEdit(tankId); sel = null; refresh();
+  toast('已还原为 config 原值');
+};
+document.getElementById('btnHideModel').onclick = (ev) => {
+  showModel = !showModel;
+  if (modelRoot) modelRoot.visible = showModel;
+  ev.target.textContent = showModel ? '隐藏坦克模型' : '显示坦克模型';
+  ev.target.classList.toggle('on', !showModel);
+};
+document.getElementById('btnHideLabels').onclick = (ev) => {
+  showLabels = !showLabels;
+  ev.target.textContent = showLabels ? '显示文字标签' : '隐藏文字标签';
+  ev.target.classList.toggle('on', showLabels);
+  rebuildOverlay();
+};
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 1800);
+}
+
+/* ═══════════ 车型切换 & 主刷新 ═══════════ */
+const tankBar = document.getElementById('tankBar');
+for (const id of Object.keys(TANKS)) {
+  const b = document.createElement('button');
+  b.textContent = TANKS[id].name;
+  b.classList.toggle('on', id === tankId);
+  b.onclick = () => {
+    tankBar.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    tankId = id; E = deepEdit(id); sel = null;
+    loadModel(id); refresh();
+  };
+  tankBar.appendChild(b);
+}
+function refresh() { buildTree(); buildProps(); rebuildOverlay(); }
+
+E = deepEdit(tankId);
+loadModel(tankId);
+refresh();
+
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+window.__editor = { get E() { return E; }, get sel() { return sel; }, refresh };
+</script>
+</body>
+</html>

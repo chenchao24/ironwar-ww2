@@ -1,0 +1,380 @@
+[
+  {
+    "file": "angers_shop_2_france.glb",
+    "sizeX": 10,
+    "sizeY": 15.22,
+    "sizeZ": 15.29,
+    "tris": 1357,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "1130253906.French Flat 3 [Angers]_2_0"
+    ],
+    "kb": 985
+  },
+  {
+    "file": "bourges_house_1_france.glb",
+    "sizeX": 11.31,
+    "sizeY": 15.48,
+    "sizeZ": 23.49,
+    "tris": 569,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "4_4_0"
+    ],
+    "kb": 1477
+  },
+  {
+    "file": "bourges_house_2_france.glb",
+    "sizeX": 7.4,
+    "sizeY": 12.7,
+    "sizeZ": 15.35,
+    "tris": 279,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "5_5_0"
+    ],
+    "kb": 1481
+  },
+  {
+    "file": "chatelaudren_filler_shop_1_france.glb",
+    "sizeX": 7.22,
+    "sizeY": 12.9,
+    "sizeZ": 13.75,
+    "tris": 528,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "chatelaudren_chatelaudren_0"
+    ],
+    "kb": 1666
+  },
+  {
+    "file": "dijon_house_1_france.glb",
+    "sizeX": 8,
+    "sizeY": 13.51,
+    "sizeZ": 12.2,
+    "tris": 529,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "3_3_0"
+    ],
+    "kb": 1261
+  },
+  {
+    "file": "feluy_village_house_1_belgium.glb",
+    "sizeX": 8,
+    "sizeY": 11.14,
+    "sizeZ": 9,
+    "tris": 330,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "Cube_Material.001_0"
+    ],
+    "kb": 1397
+  },
+  {
+    "file": "fumay_house_1_france.glb",
+    "sizeX": 6.35,
+    "sizeY": 10.48,
+    "sizeZ": 8.3,
+    "tris": 382,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "Cube.001_new_0"
+    ],
+    "kb": 1751
+  },
+  {
+    "file": "laval_house_1_france.glb",
+    "sizeX": 8,
+    "sizeY": 14.7,
+    "sizeZ": 11.06,
+    "tris": 611,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "2_Material_0"
+    ],
+    "kb": 656
+  },
+  {
+    "file": "le_mans_corner.glb",
+    "sizeX": 22.23,
+    "sizeY": 11.07,
+    "sizeZ": 7.46,
+    "tris": 1433,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "building.001_Material.001_0"
+    ],
+    "kb": 745
+  },
+  {
+    "file": "le_mans_corner_house_1_b_france.glb",
+    "sizeX": 15.49,
+    "sizeY": 11.07,
+    "sizeZ": 7.46,
+    "tris": 1334,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "building_main_0"
+    ],
+    "kb": 446
+  },
+  {
+    "file": "le_mans_filler_house_1.glb",
+    "sizeX": 4.25,
+    "sizeY": 13.83,
+    "sizeZ": 7.59,
+    "tris": 539,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "building_Main_0"
+    ],
+    "kb": 790
+  },
+  {
+    "file": "le_mans_house_1_row.glb",
+    "sizeX": 20.11,
+    "sizeY": 13.99,
+    "sizeZ": 10.76,
+    "tris": 1744,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "row 2_main_0"
+    ],
+    "kb": 774
+  },
+  {
+    "file": "le_mans_house_2_france.glb",
+    "sizeX": 16.15,
+    "sizeY": 16.15,
+    "sizeZ": 15.49,
+    "tris": 1332,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "building_Material_0"
+    ],
+    "kb": 888
+  },
+  {
+    "file": "moncontour_house_1_france.glb",
+    "sizeX": 6.51,
+    "sizeY": 11.48,
+    "sizeZ": 11.49,
+    "tris": 968,
+    "unitFixed": true,
+    "decimated": false,
+    "meshNodes": [
+      "Moncontour_1_0"
+    ],
+    "kb": 1726
+  },
+  {
+    "file": "mons_shop_2_belgium.glb",
+    "sizeX": 16.2,
+    "sizeY": 15.17,
+    "sizeZ": 15.2,
+    "tris": 3114,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "sketchfab_Material_0",
+      "sketchfab_Material.002_0"
+    ],
+    "kb": 1222
+  },
+  {
+    "file": "nivelles_corner_house_1_belgium.glb",
+    "sizeX": 19.33,
+    "sizeY": 13.5,
+    "sizeZ": 7.3,
+    "tris": 1382,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "corner 1 L2_main_0"
+    ],
+    "kb": 465
+  },
+  {
+    "file": "nivelles_corner_house_2_belgium.glb",
+    "sizeX": 7.3,
+    "sizeY": 13.5,
+    "sizeZ": 7.33,
+    "tris": 782,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "corner 2_main_0"
+    ],
+    "kb": 403
+  },
+  {
+    "file": "nivelles_house_1_belgium.glb",
+    "sizeX": 10,
+    "sizeY": 12.16,
+    "sizeZ": 8.47,
+    "tris": 590,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "2.0_2.0_0"
+    ],
+    "kb": 1315
+  },
+  {
+    "file": "nivelles_house_2_belgium.glb",
+    "sizeX": 12.1,
+    "sizeY": 11.81,
+    "sizeZ": 16.44,
+    "tris": 691,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "building 2.0_Material.003_0"
+    ],
+    "kb": 1857
+  },
+  {
+    "file": "nivelles_house_4_belgium.glb",
+    "sizeX": 8.11,
+    "sizeY": 11.75,
+    "sizeZ": 14.78,
+    "tris": 720,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "1_main_0"
+    ],
+    "kb": 394
+  },
+  {
+    "file": "nivelles_house_5_belgium.glb",
+    "sizeX": 8.03,
+    "sizeY": 11.81,
+    "sizeZ": 9.33,
+    "tris": 644,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "2_main_0"
+    ],
+    "kb": 386
+  },
+  {
+    "file": "nivelles_house_6_belgium.glb",
+    "sizeX": 20.04,
+    "sizeY": 12.46,
+    "sizeZ": 7.4,
+    "tris": 1476,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "brick L4_Main_0"
+    ],
+    "kb": 695
+  },
+  {
+    "file": "nivelles_house_7_belgium.glb",
+    "sizeX": 16.04,
+    "sizeY": 10.29,
+    "sizeZ": 12.6,
+    "tris": 703,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "building_main_0"
+    ],
+    "kb": 850
+  },
+  {
+    "file": "nivelles_house_9_belgium.glb",
+    "sizeX": 9.92,
+    "sizeY": 11.78,
+    "sizeZ": 12.25,
+    "tris": 3458,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "9 house_9_0"
+    ],
+    "kb": 1659
+  },
+  {
+    "file": "romedenne_house_1_belgium.glb",
+    "sizeX": 7.34,
+    "sizeY": 10.27,
+    "sizeZ": 12.22,
+    "tris": 460,
+    "unitFixed": true,
+    "decimated": false,
+    "meshNodes": [
+      "romedenne 1 updated_romedenne 1 update_0"
+    ],
+    "kb": 1852
+  },
+  {
+    "file": "romeree_house_1_belgium.glb",
+    "sizeX": 11.8,
+    "sizeY": 10.7,
+    "sizeZ": 8.77,
+    "tris": 374,
+    "unitFixed": true,
+    "decimated": false,
+    "meshNodes": [
+      "romer��e 1 updated_romer��e 1 new_0"
+    ],
+    "kb": 823
+  },
+  {
+    "file": "troyes_corner_shop_1_france.glb",
+    "sizeX": 7.45,
+    "sizeY": 13.17,
+    "sizeZ": 7.39,
+    "tris": 596,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "6 corner_6_0"
+    ],
+    "kb": 752
+  },
+  {
+    "file": "troyes_house_3_france.glb",
+    "sizeX": 8.06,
+    "sizeY": 10.46,
+    "sizeZ": 7.36,
+    "tris": 792,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "18_gray_0"
+    ],
+    "kb": 1099
+  },
+  {
+    "file": "york_corner_shop_1.glb",
+    "sizeX": 7.52,
+    "sizeY": 13.26,
+    "sizeZ": 15.29,
+    "tris": 1377,
+    "unitFixed": false,
+    "decimated": false,
+    "meshNodes": [
+      "building_Material_0"
+    ],
+    "kb": 460
+  }
+]

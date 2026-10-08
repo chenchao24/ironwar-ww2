@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>步兵测试 Demo — 程序化积木小兵（德/美/苏）</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #b8bec6; }
+  #hud {
+    position: fixed; top: 12px; left: 12px; z-index: 10;
+    font: 13px/1.7 "Microsoft YaHei", sans-serif; color: #e8eaec;
+    background: rgba(20,24,28,0.62); padding: 10px 14px; border-radius: 6px;
+    pointer-events: none; max-width: 320px;
+  }
+  #hud b { color: #ffd890; }
+  .legend { display: flex; gap: 12px; margin-top: 4px; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .dot { width: 12px; height: 12px; border-radius: 2px; display: inline-block; border: 1px solid rgba(255,255,255,.4); }
+  #stats { position: fixed; top: 12px; right: 12px; z-index: 10; text-align: right;
+    font: 12px/1.6 monospace; color: #e8eaec; background: rgba(20,24,28,0.62);
+    padding: 8px 12px; border-radius: 6px; pointer-events: none; white-space: pre; }
+</style>
+</head>
+<body>
+<div id="hud">
+  <b>步兵测试 Demo</b>（程序化积木小兵，无模型资产）<br>
+  左键点地面 = <b>炮击</b>（内圈阵亡 / 外圈全班卧倒 4s）<br>
+  左键点士兵 = <b>机枪命中</b>（倒地）<br>
+  拖拽旋转视角 · 滚轮缩放 · 右键平移
+  <div class="legend">
+    <span><i class="dot" style="background:#4a5248"></i>德（原野灰/罩衫）</span>
+    <span><i class="dot" style="background:#6b6248"></i>美（橄榄褐）</span>
+    <span><i class="dot" style="background:#6e5f43"></i>苏（卡其）</span>
+  </div>
+</div>
+<div id="stats"></div>
+<script type="importmap">
+{
+  "imports": {
+    "three": "./node_modules/three/build/three.module.js",
+    "three/addons/": "./node_modules/three/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="js/infantry-demo.js"></script>
+</body>
+</html>

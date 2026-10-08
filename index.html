@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>钢铁战线3 铁甲猎手 IRON WAR III — 坦克对战</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "./node_modules/three/build/three.module.js",
+    "three/addons/": "./node_modules/three/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="game-canvas"></canvas>
+
+<!-- ══════════ 封面 ══════════ -->
+<div id="screen-cover" class="screen active">
+  <div class="cover-bg"></div>
+  <div class="cover-content">
+    <div class="game-logo">
+      <div class="logo-main">钢铁战线3</div>
+      <div class="logo-sub-cn">铁甲猎手</div>
+      <div class="logo-sub">IRON&nbsp;WAR&nbsp;III&nbsp;:&nbsp;IRON&nbsp;HUNTER</div>
+    </div>
+    <div class="cover-hint blink">点 击 任 意 处 进 入</div>
+  </div>
+</div>
+
+<!-- ══════════ 主菜单 ══════════ -->
+<div id="screen-menu" class="screen">
+  <div class="menu-left">
+    <div class="menu-logo">钢铁战线3<span>铁甲猎手 · IRON WAR III</span></div>
+    <div class="menu-items">
+      <button class="menu-btn" id="btn-hunt-mode">猎杀模式<span class="btn-note">自由猎杀 · 1v1~1v5</span></button>
+      <button class="menu-btn disabled" id="btn-survival" disabled>生存模式<span class="btn-note">暂未开放</span></button>
+      <button class="menu-btn disabled" id="btn-campaign" disabled>战役模式<span class="btn-note">暂未开放</span></button>
+      <button class="menu-btn" id="btn-settings-game">游戏设置<span class="btn-note">难度 · 画质</span></button>
+      <button class="menu-btn" id="btn-settings-audio">声音设置<span class="btn-note">音效 · 音乐</span></button>
+    </div>
+  </div>
+  <div class="menu-footer">IRON WAR III v0.1 · 首次迭代 · WebGL2</div>
+</div>
+
+<!-- ══════════ 游戏设置 ══════════ -->
+<div id="modal-game" class="modal">
+  <div class="modal-box">
+    <div class="modal-title">游 戏 设 置</div>
+    <div class="setting-row"><label>AI 难度</label>
+      <select id="set-difficulty">
+        <option value="novice">新兵</option>
+        <option value="standard" selected>标准</option>
+        <option value="ace">王牌</option>
+      </select>
+    </div>
+    <div class="setting-row"><label>画质</label>
+      <select id="set-quality">
+        <option value="low">低</option>
+        <option value="medium">中</option>
+        <option value="high" selected>高</option>
+      </select>
+    </div>
+    <div class="setting-row"><label>战斗音乐</label>
+      <select id="set-bgm-mode">
+        <option value="normal">标准模式</option>
+        <option value="personal">个性化（按坦克国别）</option>
+      </select>
+    </div>
+    <div class="modal-actions"><button class="menu-btn small" id="btn-game-close">保 存 返 回</button></div>
+  </div>
+</div>
+
+<!-- ══════════ 声音设置 ══════════ -->
+<div id="modal-audio" class="modal">
+  <div class="modal-box">
+    <div class="modal-title">声 音 设 置</div>
+    <div class="setting-row"><label>主音量</label><input type="range" id="set-master" min="0" max="100" value="80"><span class="set-val" id="val-master">80</span></div>
+    <div class="setting-row"><label>音效</label><input type="range" id="set-sfx" min="0" max="100" value="90"><span class="set-val" id="val-sfx">90</span></div>
+    <div class="setting-row"><label>环境声</label><input type="range" id="set-ambient" min="0" max="100" value="60"><span class="set-val" id="val-ambient">60</span></div>
+    <div class="setting-row"><label>背景音乐</label>
+      <button type="button" id="set-bgm-toggle" class="bgm-toggle">开</button>
+      <input type="range" id="set-bgm" min="0" max="100" value="50"><span class="set-val" id="val-bgm">50</span>
+    </div>
+    <div class="modal-actions"><button class="menu-btn small" id="btn-audio-close">保 存 返 回</button></div>
+  </div>
+</div>
+
+<!-- ══════════ 车库（选车） ══════════ -->
+<div id="screen-hangar" class="screen">
+  <div class="fh-hint">滚轮缩放 · 拖拽旋转</div>
+  <div class="fh-pager">
+    <button class="fh-pager-btn" data-action="prev">‹</button>
+    <span class="fh-pager-name" id="fh-pager-name"></span>
+    <button class="fh-pager-btn" data-action="next">›</button>
+  </div>
+  <div class="fh-tanksel">
+    <select id="fh-sel-nation" title="阵营/国家"></select>
+    <select id="fh-sel-tank" title="坦克"></select>
+  </div>
+  <div class="fh-panel fh-panel-info">
+    <div class="fh-info-head">
+      <img id="fh-ac-flag" class="fh-flag" alt="">
+      <span class="fh-info-name" id="fh-ac-name"></span>
+      <span class="fh-info-sub" id="fh-ac-sub"></span>
+    </div>
+    <div class="fh-info-history" id="fh-ac-history"></div>
+    <div class="fh-spec-block">
+      <div class="fh-spec-title">性能参数</div>
+      <div class="fh-spec-list" id="fh-real-spec"></div>
+    </div>
+    <div class="fh-spec-block">
+      <div class="fh-spec-title">游戏属性</div>
+      <div class="fh-bars" id="fh-game-bars"></div>
+    </div>
+  </div>
+  <div class="fh-panel fh-panel-config">
+    <div class="fh-cfg-title">猎杀模式</div>
+    <div class="fh-cfg-preview" id="fh-preview-text"></div>
+    <div class="fh-diff-row" id="fh-count-row">
+      <span class="fh-diff-label">敌方编队</span>
+      <button class="fh-diff-btn fh-step-btn" id="fh-enemy-minus">−</button>
+      <span class="fh-enemy-count" id="fh-enemy-count">1 辆</span>
+      <button class="fh-diff-btn fh-step-btn" id="fh-enemy-plus">＋</button>
+    </div>
+    <div id="fh-enemy-list"></div>
+    <div class="fh-diff-row">
+      <span class="fh-diff-label">固定阵营</span>
+      <button class="fh-diff-btn active" id="fh-faction-lock">同盟 ↔ 轴心</button>
+    </div>
+    <div class="fh-diff-row" id="fh-diff-row">
+      <span class="fh-diff-label">AI 难度</span>
+      <button class="fh-diff-btn" data-diff="novice">新兵</button>
+      <button class="fh-diff-btn active" data-diff="standard">标准</button>
+      <button class="fh-diff-btn" data-diff="ace">王牌</button>
+    </div>
+    <div class="fh-diff-row" id="fh-map-row">
+      <span class="fh-diff-label">地图</span>
+      <select id="fh-map-select" class="fh-map-select">
+        <option value="kursk">库尔斯克 · 1943（东欧平原）</option>
+        <option value="normandy">诺曼底 · 1944（树篱田）</option>
+        <option value="ardennes">阿登森林 · 1944（雪林山地）</option>
+        <!-- <option value="prokhorovka">普罗霍罗夫卡 · 1943（冲沟台地）</option> -->
+      </select>
+    </div>
+    <button class="fh-start-btn" data-action="start">开 始 战 斗</button>
+  </div>
+  <button class="fh-back" data-action="back">‹ 返回</button>
+</div>
+
+<!-- ══════════ 战斗 HUD ══════════ -->
+<div id="hud" class="screen">
+  <!-- 车长望远镜（Q）：交叠双圆视野。位于 HUD 层最底（DOM 首位），不遮挡任何原有 UI 元素 -->
+  <div id="binoculars" class="hidden">
+    <svg id="bino-svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <mask id="bino-open">
+          <rect width="1000" height="1000" fill="#fff"/>
+          <circle cx="350" cy="500" r="280" fill="#000"/>
+          <circle cx="650" cy="500" r="280" fill="#000"/>
+        </mask>
+        <filter id="bino-feather" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="14"/>
+        </filter>
+      </defs>
+      <!-- 双圆并集外暗场（两圆相交，中央无线） -->
+      <rect width="1000" height="1000" fill="rgba(2,4,3,0.985)" mask="url(#bino-open)"/>
+      <!-- 羽化只沿并集外轮廓走（r=280 时两圆交于 (500,264)/(500,736)；左弧+右弧均取外侧大弧，颜色与暗场一致无缝融合） -->
+      <g filter="url(#bino-feather)">
+        <path d="M500,264 A280,280 0 1 0 500,736 A280,280 0 1 0 500,264 Z"
+              fill="none" stroke="rgba(2,4,3,0.985)" stroke-width="40"/>
+      </g>
+      <!-- 分划/铭文（整体 0.8 缩放） -->
+      <g transform="translate(500,500) scale(0.8) translate(-500,-500)">
+      <!-- 分划（中心公共区）：中心小十字 + 水平密位刻度 -->
+      <g stroke="rgba(8,10,6,.92)" fill="none" stroke-width="2" stroke-linecap="round">
+        <path d="M500,484 L500,516 M484,500 L516,500" stroke-width="2.2"/>
+        <path d="M340,500 L448,500 M552,500 L660,500" stroke-width="1.2"/>
+      </g>
+      <g stroke="rgba(8,10,6,.85)" stroke-width="1.4">
+        <path d="M400,494 L400,506 M450,492 L450,508 M550,492 L550,508 M600,494 L600,506"/>
+      </g>
+      <g fill="rgba(8,10,6,.85)" font-family="Consolas,monospace" font-size="14" text-anchor="middle">
+        <text x="400" y="526">10</text><text x="600" y="526">10</text>
+        <text x="450" y="530">5</text><text x="550" y="530">5</text>
+      </g>
+      <!-- 测距标识（左筒下部：2.7m 车高的密位阶梯 400/800/1200/1600m） -->
+      <g stroke="rgba(8,10,6,.85)" stroke-width="1.6" fill="none">
+        <path d="M288,640 L352,640 M296,668 L344,668 M304,692 L336,692 M312,714 L328,714"/>
+      </g>
+      <g fill="rgba(8,10,6,.85)" font-family="Consolas,monospace" font-size="12" text-anchor="start">
+        <text x="358" y="644">400</text><text x="350" y="672">800</text>
+        <text x="342" y="696">1200</text><text x="334" y="718">1600</text>
+      </g>
+      <!-- 右筒：倍率 + 型号铭文 -->
+      <text id="bino-mag" x="650" y="330" text-anchor="middle" fill="rgba(8,10,6,.9)" font-family="Consolas,monospace" font-size="22">7×</text>
+      <text x="650" y="352" text-anchor="middle" fill="rgba(8,10,6,.6)" font-family="Consolas,monospace" font-size="12">D.F. 7×50 / 12×</text>
+      <!-- 提示行 -->
+      <text x="500" y="830" text-anchor="middle" fill="rgba(230,235,220,.75)" font-size="15" letter-spacing="2">Q 退出 · Shift 切换 7×/12× · 仅观察</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- 缩圈准星（表盘式径向刻度环，尺寸随散布变化；收敛中白色 → 缩圈完成变绿） -->
+  <div id="crosshair">
+    <svg class="ch-ring" viewBox="0 0 100 100"><g id="ch-ticks"></g></svg>
+    <div class="ch-dot"></div>
+    <div id="aim-progress"></div>
+    <div id="aim-info"><span id="aim-range">-- m</span> <span id="aim-target"></span></div>
+  </div>
+  <div id="gun-marker"></div>
+  <div id="hit-marker">✕</div>
+  <div id="pen-marker"></div>
+
+  <!-- 狙击瞄准镜（右键）：羽化边缘遮罩 + 史实分划（js/reticles.js） + 中心下方装填横条 -->
+  <div id="gunsight" class="hidden">
+    <svg id="gs-svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <radialGradient id="gs-vignette" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="rgba(2,4,2,0)"/>
+          <stop offset="0.66" stop-color="rgba(2,4,2,0)"/>
+          <stop offset="0.80" stop-color="rgba(2,4,2,0.14)"/>
+          <stop offset="0.92" stop-color="rgba(2,4,2,0.78)"/>
+          <stop offset="1" stop-color="rgba(2,4,2,0.995)"/>
+        </radialGradient>
+      </defs>
+      <g id="gs-fit">
+      <rect width="1000" height="1000" fill="url(#gs-vignette)"/>
+      <!-- 圆形视野外黑幕（even-odd 挖洞 r=470；meet 适配时随 overflow:visible 覆盖两侧黑边） -->
+      <path d="M-1200,-1200 H2200 V2200 H-1200 Z M30,500 a470,470 0 1,0 940,0 a470,470 0 1,0 -940,0"
+            fill="#000" fill-rule="evenodd"/>
+      <g id="gs-reticle"></g>
+      </g>
+    </svg>
+      <div id="gs-disp"><svg class="gs-disp-ring" viewBox="0 0 100 100"><g id="gs-disp-ticks"></g></svg></div>
+      <!-- 装填圆环（刻度环左侧 30px：琥珀=装填中，绿=就绪，环内剩余秒数） -->
+      <svg id="reload-ring" viewBox="0 0 40 40">
+        <circle class="rr-track" cx="20" cy="20" r="16"/>
+        <circle class="rr-fill" cx="20" cy="20" r="16"/>
+        <text id="rr-sec" x="20" y="24">0.0</text>
+      </svg>
+      <div id="gs-readouts">
+        <div class="gs-ro" id="gs-shell">AP</div>
+        <div class="gs-ro" id="gs-reload">就绪</div>
+        <div class="gs-ro" id="gs-zoom">×2.5</div>
+        <div class="gs-ro" id="gs-range">-- m</div>
+        <div class="gs-ro" id="gs-target"></div>
+      </div>
+      <div id="gs-flash"></div>
+    </div>
+
+  <!-- 敌标层（点亮标记/距离/▼；无血条——二战观瞄不可知敌伤） -->
+  <div id="markers"></div>
+
+  <!-- 小地图 -->
+  <canvas id="minimap"></canvas>
+
+  <!-- 弹药面板（左侧极简：字母+数字；AP/HE 点击切弹，ui.js 动态生成） -->
+  <div id="ammo-panel"></div>
+
+
+  <div id="hud-bottom-left">
+    <div id="hp-panel">
+      <div id="hp-label">虎式</div>
+      <!-- 乘员状态（绿=完好 黄=受伤 灰=阵亡）：车长/炮手/装填手/驾驶员/通讯员 -->
+      <div id="crew-panel"></div>
+      <div id="status-tags"></div>
+      <div id="mod-chips"></div>
+    </div>
+  </div>
+
+  <div id="hud-bottom-right">
+    <div id="speed-panel">
+      <div class="sp-label">THROTTLE</div>
+      <div class="sp-row"><span id="speed-val">0</span><span class="unit">km/h</span></div>
+      <div id="speed-bar"><div id="speed-fill"></div></div>
+    </div>
+    <div id="gear-panel"><span class="gp-label">GEAR</span> <span id="gear-val">N</span></div>
+  </div>
+
+  <!-- 车姿显示器（战雷式：炮塔朝上、车体按相对角旋转；受击 hull-local 短暂标记；内容由 ui.js 构建） -->
+  <div id="attitude"></div>
+
+  <div id="hud-top">
+    <div id="objective">歼灭所有敌方坦克 <span class="en-label">ELIMINATE</span></div>
+    <div id="enemy-counter">敌方剩余 <span class="en-label">ENEMIES</span>: <b id="enemies-left">1</b></div>
+    <div id="time-counter">剩余时间 <span class="en-label">TIME</span>: <b id="time-left">10:00</b></div>
+    <div id="compass">
+      <div id="csWindow"><div id="csTicks"></div></div>
+      <div id="csNeedle"></div>
+      <div id="compassDeg">000°</div>
+    </div>
+  </div>
+
+  <!-- 暴露警示（被敌疑似/确认锁定时显示） -->
+  <div id="exposure-warn"></div>
+
+  <!-- 命中记录（右下，新事件底部出现向上推） -->
+  <div id="hitlog"></div>
+
+  <!-- 消耗品（维修包 R / 灭火器 T） -->
+  <div id="consum-panel">
+    <div class="cons-item" id="cons-repair"><span class="cons-key">R</span><span class="cons-name">维修</span></div>
+    <div class="cons-item" id="cons-ext"><span class="cons-key">T</span><span class="cons-name">灭火</span></div>
+  </div>
+
+  <div id="damage-vignette"></div>
+  <div id="damage-indicator"></div>
+  <!-- 修理读条（第三人称：屏幕最下方，装填条上方） -->
+  <div id="repair-wrap" style="display:none">
+    <div class="rp-label" id="repair-label">修理中</div>
+    <div class="rp-bar"><i id="repair-fill"></i></div>
+  </div>
+  <!-- 装填横条（第三人称：屏幕最下方） -->
+  <div id="reload-wrap-bottom">
+    <div class="rl-label" id="rl-bottom-label">主炮就绪</div>
+    <div class="rl-bar" id="reload-bar-bottom"><i></i></div>
+  </div>
+  <div id="battle-message"></div>
+</div>
+
+<!-- ══════════ 弃车（玩家无法战斗，强制确认） ══════════ -->
+<div id="screen-bail" class="screen">
+  <div id="pause-box">
+    <div id="pause-title" style="color:#ff7a5c">你已无法战斗</div>
+    <div style="color:#c8b89a;font-size:14px;margin:10px 0 4px;line-height:1.8">车组伤亡惨重，继续作战已不可能。<br>需要立即弃车。</div>
+    <div class="select-actions">
+      <button class="menu-btn primary" id="btn-bail-confirm">确认弃车</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 暂停 ══════════ -->
+<div id="screen-pause" class="screen">
+  <div id="pause-box">
+    <div id="pause-title">暂 停</div>
+    <div class="select-actions">
+      <button class="menu-btn primary" id="btn-pause-resume">返回游戏</button>
+      <button class="menu-btn small" id="btn-pause-menu">退回首页</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 结算 ══════════ -->
+<div id="screen-result" class="screen">
+  <div id="result-box">
+    <div id="result-title">胜 利</div>
+    <div id="result-detail"></div>
+    <div class="select-actions">
+      <button class="menu-btn small" id="btn-result-menu">返回主菜单</button>
+      <button class="menu-btn primary" id="btn-result-retry">再来一局</button>
+    </div>
+  </div>
+</div>
+
+<div id="loading-overlay"><div class="load-text">正在装载战场资源…</div><div class="load-bar"><i id="load-fill"></i></div></div>
+
+<!-- 机库/切车载入浮标 -->
+<div id="hangar-loading"><div class="hl-spinner"></div><div id="hangar-loading-text">载入机库…</div><div class="hl-bar"><i id="hangar-loading-fill"></i></div></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# ═══ 依赖（three 例外：静态部署直接引用，随库提交） ═══
+node_modules/*
+!node_modules/three/
+
+# ═══ 本地备份与归档（不入库） ═══
+_backup_*/
+_archive/
+
+# ═══ 原始大模型（不入库；入库的是压缩版） ═══
+# model/ 原包（361MB）→ 压缩版在 model/opt/（124MB，scripts/optimize-glb.mjs 产物）
+model/*.glb
+# tankModel/ 标注素材原包（config 不引用；tankModel/*.md 标注文档入库）
+tankModel/*.glb
+# 欧洲小镇原始件（入库的是 EuropeCity/opt/ 压缩版）
+otherModel/EuropeCity/*.glb
+
+# ═══ 测试截图与临时解包 ═══
+scripts/shot-*.png
+scripts/*.jpg
+scripts/_snowtex/
+scripts/_pinetex/
+scripts/_loop_env.json
+
+# ═══ 日志与系统 ═══
+*.log
+Thumbs.db
+.DS_Store

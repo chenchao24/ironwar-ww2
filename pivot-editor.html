@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>歼击车火炮转轴标定 — pivot editor</title>
+<link rel="icon" href="data:,">
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #10141a;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
+  #c { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
+  #panel { position: absolute; right: 12px; top: 12px; width: 340px; background: rgba(16,20,26,0.92);
+    border: 1px solid #2c3540; border-radius: 8px; padding: 12px 14px; color: #cfd8e0; font-size: 13px; }
+  #panel h2 { margin: 0 0 8px; font-size: 15px; color: #ffd98a; }
+  .row { margin: 7px 0; }
+  .row label { display: inline-block; width: 118px; }
+  .row input[type=range] { width: 150px; vertical-align: middle; }
+  .row .val { display: inline-block; width: 52px; text-align: right; color: #9fd48a; font-family: Consolas, monospace; }
+  .stepper { margin: 2px 0 10px 126px; }
+  .stepper button { width: 30px; padding: 3px 0; font-size: 14px; }
+  .stepper input[type=number] { width: 70px; background: #0d1117; color: #9fd48a; border: 1px solid #3d4a58;
+    border-radius: 4px; padding: 3px 6px; font-family: Consolas, monospace; }
+  .stepper .hint { margin: 0 0 0 8px; }
+  button { background: #2c3540; color: #cfd8e0; border: 1px solid #3d4a58; border-radius: 4px;
+    padding: 4px 10px; cursor: pointer; margin: 3px 4px 3px 0; }
+  button.on { background: #4a6b3a; }
+  button:hover { background: #3a4a5a; }
+  #export { margin-top: 10px; background: #0d1117; border: 1px solid #2c3540; border-radius: 4px;
+    padding: 8px; font-family: Consolas, monospace; font-size: 12px; color: #9fd48a; white-space: pre; }
+  .warn { color: #ff7a6a; }
+  .hint { color: #7a8794; font-size: 12px; margin: 6px 0; }
+  #readout { font-family: Consolas, monospace; font-size: 12px; line-height: 1.5; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "./node_modules/three/build/three.module.js",
+    "three/addons/": "./node_modules/three/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="panel">
+  <h2>火炮转轴标定 <span style="font-size:11px;color:#7a8794" id="tankName"></span></h2>
+  <div class="hint">红柱 = 偏航轴（竖直，左右转）；蓝柱 = 俯仰轴（水平，上下摆，高度/前后可调）。V 切顶视图。</div>
+  <div class="row"><label>偏航轴 z（左右转）</label><input type="range" id="yawZ" min="-3.5" max="3.5" step="0.01"><span class="val" id="yawZv"></span></div>
+  <div class="row stepper"><button id="yawZDec">−</button><input type="number" id="yawZNum" step="0.01"><button id="yawZInc">＋</button><span class="hint">微调 0.01 / 格</span></div>
+  <div class="row"><label>俯仰轴 z（前后）</label><input type="range" id="pitchZ" min="-3.5" max="3.5" step="0.01"><span class="val" id="pitchZv"></span></div>
+  <div class="row stepper"><button id="pitchZDec">−</button><input type="number" id="pitchZNum" step="0.01"><button id="pitchZInc">＋</button><span class="hint">微调 0.01 / 格</span></div>
+  <div class="row"><label>俯仰轴 y（高度）</label><input type="range" id="pitchY" min="0.5" max="4" step="0.01"><span class="val" id="pitchYv"></span></div>
+  <div class="row stepper"><button id="pitchYDec">−</button><input type="number" id="pitchYNum" step="0.01"><button id="pitchYInc">＋</button><span class="hint">蓝柱高度随此联动</span></div>
+  <div class="row">
+    <button id="btnYaw" class="on">摆动预览</button>
+    <button id="btnPitch" class="on">俯仰预览</button>
+    <button id="btnTop">顶视图 V</button>
+  </div>
+  <div id="readout"></div>
+  <div id="export"></div>
+  <button id="btnCopy">复制配置片段</button>
+  <div class="hint">标定满意后复制片段发给 AI 贴回 config.js。URL 参数换车：glb / turret / barrel / gunY / arc / dep / elev / yawZ / pitchZ / pitchY / tailZ / roofY</div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const Q = new URLSearchParams(location.search);
+// 费迪南默认（与 config.js 一致）；URL 参数可换任意歼击车
+const P = {
+  glb: Q.get('glb') || 'model/ferdinand.glb',
+  turret: (Q.get('turret') || 'Object_17').split(','),
+  barrel: (Q.get('barrel') || 'Object_17,Object_4').split(','),
+  gunY: +(Q.get('gunY') || '2.31'),          // 偏航轴高度（竖轴，y 只影响标记显示）
+  arc: +(Q.get('arc') || '11') * Math.PI / 180,
+  dep: +(Q.get('dep') || '-5') * Math.PI / 180,
+  elev: +(Q.get('elev') || '14') * Math.PI / 180,
+  yawZ: +(Q.get('yawZ') || '-2.0'),          // 偏航轴 z
+  pitchZ: +(Q.get('pitchZ') || '0.5'),       // 俯仰轴 z
+  pitchY: +(Q.get('pitchY') || Q.get('gunY') || '2.31'),  // 俯仰轴高度（默认与炮轴线同高）
+  tailZ: +(Q.get('tailZ') || '-2.57'),
+  roofY: +(Q.get('roofY') || '3.0'),
+};
+document.getElementById('tankName').textContent = P.glb;
+const yawP = new THREE.Vector3(0, P.gunY, P.yawZ);       // 偏航轴（竖直）
+const pitchP = new THREE.Vector3(0, P.pitchY, P.pitchZ); // 俯仰轴（水平，随 y/z 滑块动）
+
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x10141a);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(-9, 7, -9);
+const controls = new OrbitControls(camera, canvas);
+controls.target.set(0, 1.5, 0);
+scene.add(new THREE.AmbientLight(0xbfd0e4, 1.2));
+const sun = new THREE.DirectionalLight(0xfff0d5, 2.2);
+sun.position.set(5, 10, -4);
+scene.add(sun);
+const grid = new THREE.GridHelper(24, 24, 0x33404e, 0x222b34);
+scene.add(grid);
+const zTicks = new THREE.Group();
+for (let z = -3.5; z <= 4.7; z += 0.5) {
+  const g = new THREE.BufferGeometry().setFromPoints(
+    [new THREE.Vector3(-4, 0.01, z), new THREE.Vector3(4, 0.01, z)]);
+  zTicks.add(new THREE.Line(g, new THREE.LineBasicMaterial({ color: Math.abs(z % 1) < 0.01 ? 0x4a6b3a : 0x2c3540 })));
+}
+scene.add(zTicks);
+{ // 顶板警戒面
+  const g = new THREE.PlaneGeometry(3.4, 6.9); g.rotateX(-Math.PI / 2);
+  const plane = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: 0xff5040, transparent: true, opacity: 0.12, side: THREE.DoubleSide }));
+  plane.position.set(0, P.roofY, 0);
+  scene.add(plane);
+}
+// 轴标记：红竖柱 = 偏航轴；蓝横柱 = 俯仰轴（水平，沿车体横向）
+function axisGroup(color) {
+  const g = new THREE.Group();
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.18, 0.26, 32).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
+  ring.position.y = 0.02;
+  g.add(ring);
+  scene.add(g);
+  return g;
+}
+const yawMark = axisGroup(0xff5040);
+const pitchMark = axisGroup(0x50a0ff);
+const yawCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 4.5, 12),
+  new THREE.MeshBasicMaterial({ color: 0xff5040, transparent: true, opacity: 0.5 }));
+yawCyl.position.y = 2.25;
+scene.add(yawCyl);
+const pitchCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 4.2, 12).rotateZ(Math.PI / 2),
+  new THREE.MeshBasicMaterial({ color: 0x50a0ff, transparent: true, opacity: 0.65 }));
+scene.add(pitchCyl);
+
+// ── 炮体数学直控：炮网格留在模型原位，基准世界变换存档；每帧按轴链合成矩阵 ──
+// world = T(yawP)·RY(yaw)·T(bpRel)·RX(pitch)·T(-bpRel)·T(-yawP)·base
+// yaw=0 且 pitch=0 时平移项严格抵消 → 任意轴位下炮体零位不动；旋转绕新轴进行
+// yawMeshes = 随炮摆（turret∪barrel）；pitchMeshes = 随俯仰（barrel，走全链）
+let yawMeshes = [], pitchMeshes = [];
+const gunBox = new THREE.Box3();
+let modelRoot = null;
+new GLTFLoader().load(P.glb, (gltf) => {
+  const model = gltf.scene;
+  model.updateMatrixWorld(true);
+  scene.add(model);
+  modelRoot = model;
+  const found = new Set();
+  const collect = (names, set) => {
+    for (const n of names) {
+      const o = model.getObjectByName(n);
+      if (!o) { console.warn('节点未找到:', n); continue; }
+      o.traverse((c) => { if (c.isMesh && !found.has(c)) { found.add(c); set.push(c); } });
+    }
+  };
+  collect(P.turret, yawMeshes);
+  collect(P.barrel, pitchMeshes);
+  for (const m of yawMeshes) {   // 基准世界变换存档（模型原位），矩阵改由手控
+    m.userData.base = m.matrixWorld.clone();
+    m.matrixAutoUpdate = false;
+  }
+  applyPose(0, 0);
+  update();
+  console.log('炮体网格: yaw', yawMeshes.length, '/ pitch', pitchMeshes.length);
+});
+
+// 每帧/每次轴位变化合成炮体世界矩阵（父链矩阵已并入合成，直接写 matrixWorld）
+const _m = new THREE.Matrix4();
+function applyPose(yaw, pitch) {
+  if (!yawMeshes.length || !modelRoot) return;
+  const bpRel = new THREE.Vector3().subVectors(pitchP, yawP);
+  const yawM = new THREE.Matrix4().makeTranslation(yawP.x, yawP.y, yawP.z)
+    .multiply(new THREE.Matrix4().makeRotationY(yaw))
+    .multiply(new THREE.Matrix4().makeTranslation(-yawP.x, -yawP.y, -yawP.z));
+  const pitchM = new THREE.Matrix4().makeTranslation(bpRel.x, bpRel.y, bpRel.z)
+    .multiply(new THREE.Matrix4().makeRotationX(-pitch))
+    .multiply(new THREE.Matrix4().makeTranslation(-bpRel.x, -bpRel.y, -bpRel.z));
+  for (const m of yawMeshes) {
+    const world = new THREE.Matrix4().copy(yawM);
+    if (pitchMeshes.includes(m)) world.multiply(pitchM);
+    world.multiply(m.userData.base);
+    // 目标世界 → 局部矩阵（= 父链逆 × 目标），matrixAutoUpdate 已关，渲染器按此合成
+    m.parent.updateWorldMatrix(true, false);
+    _m.copy(m.parent.matrixWorld).invert();
+    m.matrix.copy(_m.multiply(world));
+    m.matrixWorldNeedsUpdate = true;
+  }
+}
+
+const $ = (id) => document.getElementById(id);
+let yawOn = true, pitchOn = true;
+$('yawZ').value = P.yawZ; $('pitchZ').value = P.pitchZ; $('pitchY').value = P.pitchY;
+function update() {
+  P.yawZ = +$('yawZ').value; P.pitchZ = +$('pitchZ').value; P.pitchY = +$('pitchY').value;
+  yawP.set(0, P.gunY, P.yawZ);
+  pitchP.set(0, P.pitchY, P.pitchZ);
+  $('yawZv').textContent = P.yawZ.toFixed(2); $('pitchZv').textContent = P.pitchZ.toFixed(2);
+  $('pitchYv').textContent = P.pitchY.toFixed(2);
+  yawMark.position.set(0, 0, P.yawZ);
+  yawCyl.position.set(0, 2.25, P.yawZ);
+  pitchMark.position.set(0, 0, P.pitchZ);
+  pitchCyl.position.set(0, P.pitchY, P.pitchZ);
+  applyPose(0, 0);   // 轴移动时炮体零位严格不动（平移项互相抵消）
+  $('export').textContent = `turretPivot: [0, ${P.gunY.toFixed(2)}, ${P.yawZ.toFixed(2)}],\nbarrelPivot: [0, ${P.pitchY.toFixed(2)}, ${P.pitchZ.toFixed(2)}],`;
+}
+$('yawZ').oninput = update; $('pitchZ').oninput = update; $('pitchY').oninput = update;
+// 微调计数器：−/＋ 步进 0.01，数值框可直接键入（与滑块双向同步）
+function bindStepper(id) {
+  const slider = $(id), num = $(id + 'Num');
+  const set = (v) => {
+    v = Math.max(+slider.min, Math.min(+slider.max, +v || 0));
+    slider.value = v; num.value = v.toFixed(2);
+    update();
+  };
+  $(id + 'Dec').onclick = () => set(+num.value - 0.01);
+  $(id + 'Inc').onclick = () => set(+num.value + 0.01);
+  num.onchange = () => set(num.value);
+  slider.addEventListener('input', () => { num.value = (+slider.value).toFixed(2); });
+}
+bindStepper('yawZ'); bindStepper('pitchZ'); bindStepper('pitchY');
+$('yawZNum').value = P.yawZ.toFixed(2); $('pitchZNum').value = P.pitchZ.toFixed(2); $('pitchYNum').value = P.pitchY.toFixed(2);
+update();
+$('btnYaw').onclick = (e) => { yawOn = !yawOn; e.target.classList.toggle('on', yawOn); };
+$('btnPitch').onclick = (e) => { pitchOn = !pitchOn; e.target.classList.toggle('on', pitchOn); };
+$('btnTop').onclick = () => { camera.position.set(0, 22, 0.01); controls.target.set(0, 0, 0); };
+addEventListener('keydown', (e) => { if (e.key === 'v' || e.key === 'V') $('btnTop').onclick(); });
+$('btnCopy').onclick = () => navigator.clipboard.writeText($('export').textContent).then(() => {
+  $('btnCopy').textContent = '已复制 ✓'; setTimeout(() => $('btnCopy').textContent = '复制配置片段', 1200);
+});
+
+window.__dbg = { P, yawMeshes: () => yawMeshes, pitchMeshes: () => pitchMeshes, applyPose };
+
+const clock = new THREE.Clock();
+function frame() {
+  requestAnimationFrame(frame);
+  const t = clock.getElapsedTime();
+  const yaw = yawOn ? Math.sin(t * 0.9) * P.arc : 0;
+  const pitch = pitchOn ? (P.dep + (P.elev - P.dep) * (0.5 + 0.5 * Math.sin(t * 0.7))) : P.dep;
+  applyPose(yaw, pitch);
+  if (yawMeshes.length) {
+    gunBox.setFromObject(yawMeshes[0]);
+    const top = gunBox.max.y.toFixed(2), tailZ = gunBox.min.z.toFixed(2);
+    $('readout').innerHTML = `火炮最高点 y = <b class="${gunBox.max.y > P.roofY ? 'warn' : ''}">${top}</b>（顶板 ${P.roofY}）`
+      + `<br>炮尾最远 z = ${tailZ}（标定炮尾 ${P.tailZ}）`;
+  }
+  renderer.render(scene, camera);
+}
+frame();
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

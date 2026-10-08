@@ -1,0 +1,20 @@
+{
+  "name": "ironwar3-iron-hunter",
+  "version": "1.0.0",
+  "description": "钢铁战线3 铁甲猎手 IRON WAR III — 3D 二战坦克对战（Three.js/WebGL2）",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@gltf-transform/core": "^4.4.2",
+    "@gltf-transform/functions": "^4.4.2",
+    "puppeteer-core": "^25.8.0",
+    "three": "^0.185.1"
+  }
+}

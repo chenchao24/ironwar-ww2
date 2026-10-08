@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>装甲板图模型可视化 — js/config.js armorModel 单一数据源</title>
+<link rel="icon" href="data:,">
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #10141a; }
+  #c { display: block; width: 100%; height: 100%; }
+  .panel {
+    position: fixed; color: #d7dde3; font-family: "Microsoft YaHei", sans-serif;
+    background: rgba(10,14,19,0.78); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; padding: 10px 14px; z-index: 10; font-size: 12px; line-height: 1.8;
+  }
+  #info { top: 14px; left: 14px; max-width: 400px; }
+  #info b { color: #e0a24a; }
+  #views { bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+  #views button {
+    font-family: inherit; font-size: 12px; cursor: pointer; color: #cfd8df;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 5px; padding: 6px 13px;
+  }
+  #views button:hover { border-color: #e0a24a; color: #ffd894; }
+  #views button.on { background: rgba(224,162,74,0.28); border-color: #e0a24a; color: #ffd894; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "./node_modules/three/build/three.module.js",
+    "three/addons/": "./node_modules/three/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="info" class="panel"></div>
+<div id="views" class="panel"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { TANKS } from './js/config.js';
+import { buildArmorOverlay } from './js/armorviz.js';
+
+let tankId = new URLSearchParams(location.search).get('tank') || 'tiger1';
+
+/* ── 基础场景 ── */
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = true;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x182028);
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 200);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.target.set(0, 1.4, 0.3);
+
+scene.add(new THREE.HemisphereLight(0xcfd8e4, 0x4a4a3a, 1.3));
+const sun = new THREE.DirectionalLight(0xfff0d5, 2.6);
+sun.position.set(6, 10, 4);
+sun.castShadow = true;
+scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(60, 60),
+  new THREE.MeshLambertMaterial({ color: 0x3a4034 }));
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+scene.add(new THREE.GridHelper(24, 24, 0x556070, 0x333c48));
+
+/* ── 加载与叠加 ── */
+let modelRoot = null, overlayRoot = null;
+function loadTank(id) {
+  tankId = id;
+  const cfg = TANKS[id];
+  if (modelRoot) scene.remove(modelRoot);
+  if (overlayRoot) scene.remove(overlayRoot);
+  window.__armor.ready = false;
+  new GLTFLoader().load(cfg.model, (gltf) => {
+    modelRoot = gltf.scene;
+    // 模型朝向与游戏内一致（tank.js 朝向预烘焙的纯旋转等效；装甲板图是烘焙后 +Z 系）
+    if (cfg.forwardAxis === '+x') modelRoot.rotation.y = -Math.PI / 2;
+    else if (cfg.forwardAxis === '+y') modelRoot.rotation.set(-Math.PI / 2, Math.PI, 0, 'YXZ');
+    if (cfg.bakeY180) modelRoot.rotation.y += Math.PI;
+    if (cfg.bakeX90) modelRoot.rotation.x += Math.PI / 2;
+    modelRoot.traverse(o => { if (o.isMesh) o.castShadow = true; });
+    scene.add(modelRoot);
+    const r = buildArmorOverlay(cfg.armorModel, cfg.internal, {});
+    overlayRoot = r.group;
+    scene.add(overlayRoot);
+    refreshInfo(cfg);
+    window.__armor.ready = true;
+  });
+}
+function refreshInfo(cfg) {
+  const b = cfg.armorModel.hull.box;
+  const hw = b.x1 - b.x0, hd = b.z1 - b.z0;
+  document.getElementById('info').innerHTML = `
+    <b>${cfg.name} — 装甲板图模型（自由板）</b><br>
+    判定盒 ${hw.toFixed(2)}m × ${hd.toFixed(2)}m（参照框，略小于车体）· 板 = 真正装甲面<br>
+    每板：厚度 t + 位置 pos + 尺寸 size + 旋转 rot · 等效 = t / max(cos入射角, 0.5)<br>
+    <span style="color:#6a8ac8">■</span>≤25 <span style="color:#52b06a">■</span>≤40
+    <span style="color:#c8b052">■</span>≤70 <span style="color:#e08a40">■</span>≤90
+    <span style="color:#e05252">■</span>&gt;90mm · <span style="color:#ff4dff">■</span>弱点描边<br>
+    白球=乘员 · 彩球=模块 · 调参请用 <a href="armor-editor.html" style="color:#7deeff">armor-editor.html</a>`;
+}
+
+/* ── 视角与车型切换 ── */
+const VIEWS = {
+  persp: { label: '3/4 视角', pos: [7.5, 4.5, 8.5] },
+  side:  { label: '正侧视', pos: [10.5, 1.6, 0] },
+  front: { label: '正面', pos: [0, 1.8, 10.5] },
+  top:   { label: '俯视', pos: [0, 13, 0.01] },
+};
+const vb = document.getElementById('views');
+for (const [k, v] of Object.entries(VIEWS)) {
+  const b = document.createElement('button');
+  b.textContent = v.label;
+  b.onclick = () => { camera.position.set(...v.pos); controls.target.set(0, 1.4, 0.3); controls.update(); };
+  vb.appendChild(b);
+}
+for (const id of Object.keys(TANKS)) {
+  const b = document.createElement('button');
+  b.textContent = TANKS[id].name;
+  b.dataset.tank = id;
+  b.onclick = () => {
+    vb.querySelectorAll('[data-tank]').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    loadTank(id);
+  };
+  if (id === tankId) b.classList.add('on');
+  vb.appendChild(b);
+}
+
+camera.position.set(...VIEWS.persp.pos);
+controls.update();
+
+window.__armor = {
+  ready: false,
+  setView: (k) => { const v = VIEWS[k]; if (v) { camera.position.set(...v.pos); controls.target.set(0, 1.4, 0.3); controls.update(); } },
+  setOverlays: (v) => { if (overlayRoot) overlayRoot.visible = !!v; },   // 显示/隐藏装甲板叠加层（看模型本体）
+};
+
+loadTank(tankId);
+
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

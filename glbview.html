@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script type="importmap">
+{ "imports": { "three": "./node_modules/three/build/three.module.js", "three/addons/": "./node_modules/three/examples/jsm/" } }
+</script>
+</head>
+<body style="margin:0">
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+const glb = new URLSearchParams(location.search).get('glb') || 'tankModel/pz.kpfw._vi.glb';
+const only = (new URLSearchParams(location.search).get('only') || '').split(',').filter(Boolean);
+const hide = (new URLSearchParams(location.search).get('hide') || '').split(',').filter(Boolean);
+const r = new THREE.WebGLRenderer({ antialias: true });
+r.setSize(innerWidth, innerHeight); document.body.appendChild(r.domElement);
+const sc = new THREE.Scene(); sc.background = new THREE.Color(0x404850);
+const ortho = new URLSearchParams(location.search).get('ortho');
+let cam;
+if (ortho) {
+  const h = parseFloat(ortho) || 4;   // 可视半高（米）
+  const asp = innerWidth / innerHeight;
+  cam = new THREE.OrthographicCamera(-h * asp, h * asp, h, -h, 0.1, 100);
+} else {
+  cam = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 100);
+}
+sc.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.2));
+const dl = new THREE.DirectionalLight(0xffffff, 1.5); dl.position.set(3, 6, 4); sc.add(dl);
+sc.add(new THREE.GridHelper(20, 20));
+new GLTFLoader().load(glb, (g) => {
+  if (only.length || hide.length) g.scene.traverse(o => {
+    if (!o.isMesh) return;
+    if (only.length && !only.some(p => o.name === p || o.name.startsWith(p))) o.visible = false;
+    if (hide.some(p => o.name === p || o.name.startsWith(p))) o.visible = false;
+  });
+  sc.add(g.scene);
+  window.__scene = sc;
+  window.__THREE = THREE;
+  const box = new THREE.Box3().setFromObject(g.scene);
+  window.__box = { min: box.min.toArray(), max: box.max.toArray() };
+  window.__view = (px, py, pz, tx, ty, tz) => {
+    cam.position.set(px, py, pz); cam.lookAt(tx || 0, ty || 1, tz || 0);
+    r.render(sc, cam);
+  };
+  window.__ready = true;
+}, undefined, (err) => { console.error('LOAD FAIL', (err && err.message) || String(err)); window.__fail = true; });
+</script>
+</body>
+</html>

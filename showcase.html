@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>钢铁战线3 — 模型展示 · 玩家坦克 / 树木 / 程序化灌木丛组</title>
+<link rel="icon" href="data:,">
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #0b0f14; }
+  #sc-canvas { display: block; width: 100%; height: 100%; }
+  .panel {
+    position: fixed; color: #d7dde3; font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: rgba(10, 14, 19, 0.74); border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 8px; backdrop-filter: blur(5px); z-index: 10;
+  }
+  #sc-title { top: 14px; left: 14px; padding: 10px 16px 9px; }
+  #sc-title .t1 { font-size: 16px; font-weight: 700; letter-spacing: 2px; color: #e8d9b0; }
+  #sc-title .t2 { font-size: 11px; color: #8b97a3; margin-top: 3px; letter-spacing: 1px; }
+  #sc-stats { top: 14px; right: 14px; padding: 8px 14px; font-size: 11px; line-height: 1.75; font-family: Consolas, monospace; color: #9fb0be; }
+  #sc-stats b { color: #e0a24a; font-weight: 600; }
+  #sc-toolbar { bottom: 16px; left: 50%; transform: translateX(-50%); padding: 8px 10px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  #sc-toolbar button {
+    font-family: inherit; font-size: 12px; letter-spacing: 1px; cursor: pointer;
+    color: #cfd8df; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 5px; padding: 6px 13px; transition: all .15s;
+  }
+  #sc-toolbar button:hover { background: rgba(224,162,74,0.18); border-color: rgba(224,162,74,0.5); color: #ffd894; }
+  #sc-toolbar button.on { background: rgba(224,162,74,0.28); border-color: #e0a24a; color: #ffd894; }
+  #sc-hint { bottom: 16px; right: 14px; padding: 7px 12px; font-size: 11px; color: #7d8894; letter-spacing: 0.5px; }
+  #sc-load {
+    position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; gap: 14px;
+    align-items: center; justify-content: center; background: #0b0f14; color: #b7c2cc;
+    font-family: "Microsoft YaHei", sans-serif; transition: opacity .6s; letter-spacing: 3px; font-size: 14px;
+  }
+  #sc-load .bar { width: 260px; height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+  #sc-load .bar i { display: block; height: 100%; width: 0%; background: #e0a24a; transition: width .2s; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "./node_modules/three/build/three.module.js",
+    "three/addons/": "./node_modules/three/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="sc-canvas"></canvas>
+
+<div id="sc-title" class="panel">
+  <div class="t1">钢铁战线3 · 模型展示</div>
+  <div class="t2">玩家坦克 · 树木 · 程序化灌木丛组（js/hedge.js 固化版 · 高 2.0~2.8m · 侧向错落）</div>
+</div>
+<div id="sc-stats" class="panel"></div>
+<div id="sc-toolbar" class="panel"></div>
+<div id="sc-hint" class="panel">左键拖动旋转 · 滚轮缩放 · 右键平移</div>
+<div id="sc-load"><div>资 源 加 载 中</div><div class="bar"><i id="sc-load-bar"></i></div><div id="sc-load-txt" style="font-size:11px;color:#66727e">0 / 0</div></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { buildHedgeTemplate, instantiateHedges, updateHedge, hedgeUniforms } from './js/hedge.js';
+
+/* ═══════════════ 基础：渲染器 / 场景 / 相机 ═══════════════ */
+const canvas = document.getElementById('sc-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.12;
+
+const scene = new THREE.Scene();
+const FOG_COLOR = 0xd4e2ec;
+scene.fog = new THREE.Fog(FOG_COLOR, 110, 620);
+
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 2500);
+camera.position.set(0, 10.5, 24);
+
+const controls = new OrbitControls(camera, canvas);
+controls.target.set(0, 1.4, -2);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.maxPolarAngle = Math.PI * 0.495;
+controls.minDistance = 1.2;
+controls.maxDistance = 90;
+
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.28;
+
+/* ═══════════════ 光照（库尔斯克夏日午后，同游戏光源色） ═══════════════ */
+scene.add(new THREE.HemisphereLight(0xbdd0e4, 0x8a9058, 1.5));
+scene.add(new THREE.AmbientLight(0xaab2b8, 0.4));
+const sun = new THREE.DirectionalLight(0xfff0d5, 3.4);
+sun.position.set(42, 55, 28);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = sun.shadow.camera.bottom = -34;
+sun.shadow.camera.right = sun.shadow.camera.top = 34;
+sun.shadow.camera.near = 10;
+sun.shadow.camera.far = 180;
+sun.shadow.bias = -0.0004;
+sun.shadow.normalBias = 0.03;
+scene.add(sun);
+
+/* ═══════════════ 天空穹顶 ═══════════════ */
+const sky = new THREE.Mesh(
+  new THREE.SphereGeometry(900, 32, 16),
+  new THREE.ShaderMaterial({
+    side: THREE.BackSide, depthWrite: false, fog: false,
+    uniforms: {
+      uZenith: { value: new THREE.Color(0x4a7fc4) },
+      uHorizon: { value: new THREE.Color(FOG_COLOR) },
+      uSunDir: { value: sun.position.clone().normalize() },
+    },
+    vertexShader: `varying vec3 vDir; void main(){ vDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+    fragmentShader: `
+      uniform vec3 uZenith, uHorizon, uSunDir; varying vec3 vDir;
+      void main(){
+        vec3 d = normalize(vDir);
+        float h = clamp(d.y, -1.0, 1.0);
+        vec3 col = mix(uHorizon, uZenith, pow(clamp(h, 0.0, 1.0), 0.52));
+        float s = pow(clamp(dot(d, normalize(uSunDir)), 0.0, 1.0), 320.0);
+        float glow = pow(clamp(dot(d, normalize(uSunDir)), 0.0, 1.0), 7.0);
+        col += vec3(1.0, 0.92, 0.78) * (s * 1.6 + glow * 0.22);
+        gl_FragColor = vec4(col, 1.0);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }`,
+  })
+);
+scene.add(sky);
+
+/* ═══════════════ 程序化贴图 / 地面（展示页布景，非灌木模块） ═══════════════ */
+function canvasTex(size, draw, repeat) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  draw(c.getContext('2d'), size);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  if (repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(repeat, repeat); }
+  return t;
+}
+const rnd = Math.random;
+const rr = (a, b) => a + rnd() * (b - a);
+
+const grassTex = canvasTex(512, (g, s) => {
+  g.fillStyle = 'hsl(72,18%,43%)'; g.fillRect(0, 0, s, s);
+  for (let i = 0; i < 42; i++) {
+    g.fillStyle = `hsla(${52 + rnd() * 14},${21 + rnd() * 12}%,${47 + rnd() * 10}%,${0.1 + rnd() * 0.16})`;
+    g.beginPath(); g.ellipse(rnd() * s, rnd() * s, rr(24, 90), rr(14, 50), rnd() * 3.14, 0, 6.29); g.fill();
+  }
+  for (let i = 0; i < 46; i++) {
+    g.fillStyle = `hsla(${76 + rnd() * 14},21%,${30 + rnd() * 10}%,${0.08 + rnd() * 0.12})`;
+    g.beginPath(); g.ellipse(rnd() * s, rnd() * s, rr(20, 70), rr(12, 40), rnd() * 3.14, 0, 6.29); g.fill();
+  }
+  for (let i = 0; i < 5200; i++) {
+    g.fillStyle = rnd() < 0.5 ? `hsla(70,16%,${24 + rnd() * 20}%,0.35)` : `hsla(64,22%,${52 + rnd() * 22}%,0.3)`;
+    g.fillRect(rnd() * s, rnd() * s, 1 + rnd() * 1.6, 1 + rnd() * 1.6);
+  }
+  g.strokeStyle = 'hsla(80,22%,34%,0.4)';
+  for (let i = 0; i < 900; i++) {
+    const x = rnd() * s, y = rnd() * s, l = 3 + rnd() * 6, a = -1.2 + rnd() * 0.6;
+    g.lineWidth = 0.8; g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke();
+  }
+}, 26);
+
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(560, 560),
+  new THREE.MeshLambertMaterial({ map: grassTex })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+/* ═══════════════ 灌木丛组（js/hedge.js 固化模块；固定种子可复现） ═══════════════ */
+const hedgeRows = [];
+const ROW_DEFS = [
+  { cx: -8.5, cz: -4.5, yawDeg: 3,  len: 10,  seed: 20260911,              label: 'A·10m' },
+  { cx: 1.5,  cz: 0.5,  yawDeg: -4, len: 7,   seed: 20260911 + 977,        label: 'B·7m' },
+  { cx: 9.8,  cz: -5.5, yawDeg: 6,  len: 4.5, seed: 20260911 + 1954,       label: 'C·4.5m' },
+];
+for (const d of ROW_DEFS) {
+  const tpl = buildHedgeTemplate({ len: d.len, seed: d.seed });
+  // 展示页单丛摆放：chunkSize=Infinity → 每变体一个 InstancedMesh；mipmaps 仅展示页开（近景画质）
+  const { stats } = instantiateHedges(scene, tpl, [{ x: d.cx, z: d.cz, yaw: d.yawDeg }], {
+    chunkSize: Infinity, mipmaps: true, groundY: () => 0,
+  });
+  hedgeRows.push({ label: d.label, ...stats });
+}
+
+/* ═══════════════ 加载坦克与树木 ═══════════════ */
+const GLBS = {
+  tiger: 'model/tiger1.glb',
+  m4: 'model/m4a376w.glb',
+  leaf: 'houseModel/oject/leaf_tree.glb',
+  pine: 'houseModel/oject/pine_tree.glb',
+};
+const models = {};
+const loadBar = document.getElementById('sc-load-bar');
+const loadTxt = document.getElementById('sc-load-txt');
+const keys = Object.keys(GLBS);
+let loadedN = 0;
+const loader = new GLTFLoader();
+
+function prepFlora(root) {
+  root.traverse(o => {
+    if (o.isMesh) {
+      o.castShadow = o.receiveShadow = true;
+      const mats = Array.isArray(o.material) ? o.material : [o.material];
+      for (const m of mats) {
+        m.side = THREE.DoubleSide;
+        if (m.map) {
+          m.alphaTest = 0.45;
+          if (!o.customDepthMaterial) {
+            o.customDepthMaterial = new THREE.MeshDepthMaterial({
+              depthPacking: THREE.RGBADepthPacking, map: m.map, alphaTest: 0.45,
+            });
+          }
+        }
+      }
+    }
+  });
+}
+function placeTank(gltf, x, z, yawDeg) {
+  const rig = new THREE.Group();
+  const m = gltf.scene;
+  m.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; } });
+  m.rotation.y = -Math.PI / 2;
+  rig.add(m);
+  rig.position.set(x, 0, z);
+  rig.rotation.y = yawDeg * Math.PI / 180;
+  scene.add(rig);
+  return rig;
+}
+function placeProp(gltf, x, z, scale, yawDeg = 0) {
+  const g = gltf.scene.clone(true);
+  prepFlora(g);
+  const rig = new THREE.Group();
+  rig.add(g);
+  rig.position.set(x, 0, z);
+  rig.rotation.y = yawDeg * Math.PI / 180;
+  rig.scale.setScalar(scale);
+  scene.add(rig);
+  return rig;
+}
+
+Promise.all(keys.map(k => new Promise((res) => {
+  loader.load(GLBS[k], (g) => {
+    models[k] = g;
+    loadedN++;
+    loadBar.style.width = (loadedN / keys.length * 100) + '%';
+    loadTxt.textContent = loadedN + ' / ' + keys.length;
+    res();
+  }, undefined, () => { console.error('load fail', GLBS[k]); res(); });
+}))).then(() => {
+  placeTank(models.tiger, -13.5, 6.5, 38);
+  const m4 = placeTank(models.m4, 14.5, 5.5, -32);
+  m4.traverse(o => { if (['obj2', 'object01', 'sandbags'].includes(o.name)) o.visible = false; });
+  placeProp(models.leaf, -16.5, -10.5, 0.62, 30);
+  placeProp(models.leaf, 14.5, -9.5, 0.5, -140);
+  placeProp(models.leaf, -19.5, 1.5, 0.45, 80);
+  placeProp(models.pine, -20, -5.5, 0.5, 10);
+  placeProp(models.pine, 19.5, -7, 0.55, -30);
+  document.getElementById('sc-load').style.opacity = '0';
+  setTimeout(() => document.getElementById('sc-load').remove(), 700);
+  window.__showcase.ready = true;
+});
+
+/* ═══════════════ UI：视角预设 / 开关 / 统计 ═══════════════ */
+const VIEWS = {
+  overview: { label: '全景', pos: [0, 10.5, 24], tgt: [0, 1.4, -2] },
+  hedgeAll: { label: '灌木组', pos: [10.5, 2.6, 9.5], tgt: [0, 1.1, -3] },
+  rowA: { label: 'A·10m', pos: [-4.2, 1.5, 0.8], tgt: [-8.5, 1.05, -4.5] },
+  rowB: { label: 'B·7m', pos: [5.2, 1.4, 4.8], tgt: [1.5, 1.0, 0.5] },
+  rowC: { label: 'C·4.5m', pos: [11.8, 1.4, 0.2], tgt: [9.8, 1.05, -5.5] },
+  tiger: { label: '虎式', pos: [-18.5, 2.6, 11.5], tgt: [-13.5, 1.1, 6.5] },
+  sherman: { label: '谢尔曼', pos: [19.2, 2.4, 11.2], tgt: [14.5, 1.1, 5.5] },
+};
+const toolbar = document.getElementById('sc-toolbar');
+const viewBtns = {};
+for (const [k, v] of Object.entries(VIEWS)) {
+  const b = document.createElement('button');
+  b.textContent = v.label;
+  b.onclick = () => {
+    camera.position.set(...v.pos);
+    controls.target.set(...v.tgt);
+    controls.update();
+    Object.values(viewBtns).forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+  };
+  viewBtns[k] = b;
+  toolbar.appendChild(b);
+}
+const windBtn = document.createElement('button');
+windBtn.textContent = '风摆 开';
+windBtn.onclick = () => {
+  hedgeUniforms.uWindAmp.value = hedgeUniforms.uWindAmp.value > 0.5 ? 0 : 1;
+  windBtn.textContent = hedgeUniforms.uWindAmp.value > 0.5 ? '风摆 开' : '风摆 关';
+  windBtn.classList.toggle('on', hedgeUniforms.uWindAmp.value > 0.5);
+};
+windBtn.classList.add('on');
+toolbar.appendChild(windBtn);
+const rotBtn = document.createElement('button');
+rotBtn.textContent = '自动环绕';
+rotBtn.onclick = () => { controls.autoRotate = !controls.autoRotate; rotBtn.classList.toggle('on', controls.autoRotate); };
+toolbar.appendChild(rotBtn);
+
+const statsEl = document.getElementById('sc-stats');
+let fpsEMA = 60;
+setInterval(() => {
+  const rows = hedgeRows.map(r => {
+    const w = r.max[0] - r.min[0], h = r.max[1], d = r.zMax - r.zMin;
+    return `${r.label}: <b>${w.toFixed(1)}m × 高${h.toFixed(1)}m × ${d.toFixed(1)}m</b>·${(r.cards / 1000).toFixed(1)}k卡`;
+  }).join('<br>');
+  statsEl.innerHTML = rows + `<br>drawcalls <b>${renderer.info.render.calls}</b> · 全场 <b>${(renderer.info.render.triangles / 1000).toFixed(0)}k</b> tris · <b>${fpsEMA.toFixed(0)}</b> fps`;
+}, 500);
+
+/* ═══════════════ 主循环 ═══════════════ */
+const clock = new THREE.Clock();
+let prevT = 0;
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  updateHedge(t);
+  const dt = t - prevT; prevT = t;
+  if (dt > 0 && dt < 0.5) fpsEMA += (1 / dt - fpsEMA) * 0.05;
+  controls.update();
+  renderer.render(scene, camera);
+});
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+window.__showcase = {
+  ready: false,
+  setView: (k) => { const v = VIEWS[k]; if (v) { camera.position.set(...v.pos); controls.target.set(...v.tgt); controls.update(); } },
+  hedgeRows, uWindAmp: hedgeUniforms.uWindAmp, fpsEMA: () => fpsEMA,
+  renderer, THREE, scene,
+};
+window.__showcase.setView('overview');
+</script>
+</body>
+</html>
