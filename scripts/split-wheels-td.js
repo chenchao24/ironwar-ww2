@@ -146,6 +146,37 @@ const CFG = {
     rollerMinComponents: 1,
     rollerMinDist: 0.30,
   },
+  // ── 2026-10-09 M4 三连（Jumbo/Thunderbolt/Firefly）：谢尔曼系合并轮件，bucket 归桶 ──
+  // 实测（analyze-td）：HVSS（E8）轮 span 0.5 / 前主动轮 z2.36 span 0.63 / 后诱导轮 z-2.53 span 0.56；
+  // VVSS（Jumbo/Firefly）轮对成组、前主动 z≈2.5 span 0.71/0.72——discSpan 下放到 0.45 兼容小车轮回转轮
+  jumbo: {
+    SRC: 'tankModel/m4a3e2_76_w_jumbo.glb', OUT: 'model/m4a3e2_jumbo.glb',
+    wheelNodes: ['Object_15', 'Object_14', 'Object_16'],
+    mode: 'bucket',
+    driveFront: true,
+    discSpan: [0.45, 0.85],
+    discMinAx: 0.8,
+  },
+  thunderbolt: {
+    SRC: 'tankModel/m4a3e8_thunderbolt_vii.glb', OUT: 'model/m4a3e8.glb',
+    wheelNodes: ['Object_5', 'Object_6'],
+    mode: 'bucket',
+    driveFront: true,
+    discSpan: [0.45, 0.85],
+    discMinAx: 0.8,
+    discRoundTol: 0.06,   // HVSS 平衡肘枢轴座不圆（y 跨 0.60 vs z 跨 0.45），剔除误种
+    // Object_7 整塔合并件（含车顶 M2HB）：按三角面质心切车顶机枪（roofMg）——
+    // 目标件 y2.79~3.02 z-1.43~-1.2（塔顶后左侧）；y>2.66 且 z<-0.85 避开舱盖/储物箱
+    roofMgSplit: { node: 'Object_7', newName: 'roofMg', test: (c) => c[1] > 2.66 && c[2] < -0.85 },
+  },
+  firefly: {
+    SRC: 'tankModel/sherman_firefly.glb', OUT: 'model/sherman_firefly.glb',
+    wheelNodes: ['Object_25', 'Object_24'],
+    mode: 'bucket',
+    driveFront: true,
+    discSpan: [0.45, 0.85],
+    discMinAx: 0.8,
+  },
   m36: {
     SRC: 'tankModel/m36_gmc.glb', OUT: 'model/m36_gmc.glb',
     wheelNodes: ['Object_14', 'Object_17', 'Object_18'],
@@ -261,7 +292,13 @@ function worldMat(node) {
     // 满盘分量（spanY,spanZ ∈ discSpan）或回转轮盘（span ∈ rollerSpan 且 |x|>rollerMinAx）发现种子
     for (const cp of comps) {
       const discR = Math.max(cp.spanY, cp.spanZ) / 2;
-      const isFullDisc = cp.spanY >= DS[0] && cp.spanZ >= DS[0] && cp.spanY <= DS[1] && cp.spanZ <= DS[1] && cp.spanX <= SX;
+      // discMinAx（2026-10-09 新增，缺省 0 不影响既有车型）：满盘种子要求 |质心x| 达标——
+      // 排除车体中线的扁平件（M4 首下牵引钩座 y0.49~1.04 x±0.24 被误种为"轮"）
+      // discRoundTol（同日，缺省 ∞）：满盘种子要求 spanY≈spanZ（真轮必圆）——
+      // 排除 HVSS 平衡肘枢轴座（thunderbolt：y 跨 0.60 vs z 跨 0.45 不圆，误种在轮对中间）
+      const isFullDisc = cp.spanY >= DS[0] && cp.spanZ >= DS[0] && cp.spanY <= DS[1] && cp.spanZ <= DS[1] && cp.spanX <= SX
+        && Math.abs(cp.c[0]) > (CFG.discMinAx || 0)
+        && Math.abs(cp.spanY - cp.spanZ) <= (CFG.discRoundTol ?? Infinity);
       const isRoller = cp.spanY >= RS[0] && cp.spanZ >= RS[0] && cp.spanY < RS[1] && cp.spanZ < RS[1]
         && Math.abs(cp.c[0]) > RMINAX && cp.c[1] > RY[0] && cp.c[1] < RY[1];
       if (!isFullDisc && !isRoller) continue;

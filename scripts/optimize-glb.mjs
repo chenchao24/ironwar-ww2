@@ -20,10 +20,11 @@ const io = new NodeIO().registerExtensions(ALL_EXTENSIONS)
 let totalIn = 0, totalOut = 0;
 for (const m of models) {
   const name = path.basename(m);
+  const src = m.replace('model/opt/', 'model/');   // config 现指 opt 产物；输入始终为 model/ 原包
   const outPath = path.join(OUT, name);
-  if (!fs.existsSync(m)) { console.log('MISS', m); continue; }
-  const inSize = fs.statSync(m).size;
-  const doc = await io.read(m);
+  if (!fs.existsSync(src)) { console.log('MISS', src); continue; }
+  const inSize = fs.statSync(src).size;
+  const doc = await io.read(src);
   await doc.transform(
     dedup(),
     prune(),

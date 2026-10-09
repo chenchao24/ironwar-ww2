@@ -560,6 +560,385 @@ fireAim: 'tankSound/gem/pz62-tiger2-88mm-inner.mp3',     // 瞄准镜开炮：88
 
   // ── 黑豹 Panther Ausf. A（1943 库尔斯克）────────────────────
   // 部件/点位：md 标注（model/panther-a.md）+ scripts/measure-new-tanks.js 实测
+  // ── M4A3E2 (76)W Jumbo（2026-10-09 接入，第 25 辆；突击坦克：加厚装甲+T23 重炮塔） ──
+  'jumbo': {
+    caliber: 76,             // mm 主炮口径（跳弹口径碾压用）
+    id: 'jumbo',
+    nation: 'us',
+    reticle: 'us2',           // M82 望远镜静态分划
+    zoomFov: 20.7,            // M82 固定 3×
+    aiRole: 'anchor',         // 重甲突击车：低速压阵线
+    aiTraits: {},
+    name: 'M4A3E2 重装突击坦克 "Jumbo"',
+    nameEn: 'M4A3E2 (76)W Jumbo',
+    model: 'model/opt/m4a3e2_jumbo.glb',
+    scale: 1.0,
+    parts: {
+      // md 标注（tankModel/m4a3e2_76_w_jumbo.md）；GLTFLoader 剥点/空格转下划线
+      turret: ['Object_24', 'Object_25', 'Object_2', 'Object_6', 'Object_27', 'Object_11', 'Object_3', 'Object_5', 'Object_12'],
+      mg: ['Object_8'],        // 车顶 M2HB（右键）
+      barrel: ['Object_22', 'Object_13', 'Object_26'],   // 炮管+炮口件+同轴机枪（随俯仰）
+      track: ['Object_7', 'Object_9'],
+      wheels: ['wheelL1', 'wheelL2', 'wheelL3', 'wheelL4', 'wheelL5', 'wheelL6',
+               'wheelR1', 'wheelR2', 'wheelR3', 'wheelR4', 'wheelR5', 'wheelR6',
+               'wheelLS', 'wheelRS', 'wheelLI', 'wheelRI'],
+    },
+    // 枢轴实测（2026-10-09 measure-td）：座圈圆心 z-0.04；炮管轴 y2.284 炮口 z3.93
+    turretPivot: [0, 1.90, -0.04],
+    barrelPivot: [0, 2.28, 0.90],
+    muzzleLocal: [0, 2.28, 3.93],
+    exhaustLocal: [[0.42, 0.90, -2.55], [-0.15, 0.87, -2.49]],   // md 排气烟点×2.56
+    trackLocal: [[-1.05, 0.1, 0], [1.05, 0.1, 0]],
+    trackScrollAxis: 'y',       // 实测纵向=V 底段 flip
+    trackScrollFlip: true,
+    mass: 38100,                 // kg（加厚装甲战斗全重，史实）
+    engineHp: 500,               // Ford GAA V8
+    maxSpeedForward: 35 / 3.6,   // 史实 35km/h（超重）
+    maxSpeedReverse: 8 / 3.6,
+    maxSpeed: 35 / 3.6,
+    offroadK: 0.55,              // 越野 ≈19km/h（重车迟缓）
+    revSpeed: 2.2,
+    enginePower: 3.2,
+    powerFalloff: 0.58,
+    clutchDelay: 0.4,
+    engineBrake: 1.6,
+    brakeDecel: 6.5,
+    turnDrag: 0.45,
+    slopePower: 0.5,
+    hullTraverse: 0.55,          // 重车车体转向偏钝
+    turretTraverse: 0.30,        // T23 重炮塔电液转向
+    gunDepression: -10.0,
+    gunElevation: 25.0,
+    wheelsRotate: true,
+    gyroStab: true,              // 垂稳保留
+    gunCaliber: 76,
+    shellName: 'M62 APC',
+    shellNameCn: '被帽穿甲弹',
+    shellVelocity: 792,
+    shellPen: 105,               // mm RHA @0m（30° 基准，与 M4A3(76)W 同炮）
+    shellPenDrop: 0.14,
+    apcrShell: { name: 'M93 HVAP', nameCn: '钨芯穿甲弹', velocity: 1036, pen: 178, penDrop: 0.22 },
+    heShellName: 'M42A1',
+    heVelocity: 820,
+    loadout: { ap: 40, apcr: 5, he: 26 },   // 71 发史实基数
+    spallPower: 100,
+    reloadTime: 6.5,             // 加厚炮塔内更局促
+    dispersion: 0.00033,
+    aimTime: 2.0,
+    armor: {
+      hullFront: 102, hullSide: 76, hullRear: 38, hullTop: 25,   // 史实：首上 63.5+38=101.6@47°、侧 76
+      turretFront: 152, turretSide: 152, turretRear: 152,        // T23 重炮塔全向 6 英寸
+    },
+    armorModel: {
+      hull: {
+        box: { x0: -1.38, x1: 1.38, y0: 0.25, y1: 1.96, z0: -3.35, z1: 2.9 },
+        plates: [
+          { name: '首上(大倾角)', face: 'front', t: 102, pos: [0, 1.45, 2.45], size: [2.6, 1.4], rot: [-47, 0, 0] },
+          { name: '首下', face: 'front', t: 114, pos: [0, 0.7, 2.78], size: [2.56, 0.78], rot: [30, 0, 0] },
+          { name: '车尾', face: 'rear', t: 38, pos: [0, 1.1, -3], size: [2.56, 1.7], rot: [10, 0, 0] },
+          { name: '侧上', face: 'side', t: 76, pos: [1.34, 1.51, 0], size: [6.1, 0.9], rot: [0, 90, 0], mirror: true },
+          { name: '行走部', face: 'side', t: 38, pos: [1.34, 0.685, 0], size: [6.1, 0.87], rot: [0, 90, 0], mirror: true, track: true },
+          { name: '车顶', face: 'top', t: 25, pos: [0, 1.96, -0.2], size: [2.68, 6], rot: [-90, 0, 0] },
+        ],
+        extras: [],
+      },
+      turret: {
+        box: { x0: -1.02, x1: 1.02, y0: 1.96, y1: 3.03, z0: -1.76, z1: 0.98 },
+        plates: [
+          { name: '炮盾', face: 'front', t: 152, pos: [0, 2.42, 1.22], size: [1.5, 1], rot: [0, 0, 0] },
+          { name: '炮塔正面', face: 'front', t: 152, pos: [-0.62, 2.42, 0.95], size: [0.9, 1], rot: [-2, -48, 0] },
+          { name: '炮塔正面', face: 'front', t: 152, pos: [0.62, 2.42, 0.95], size: [0.9, 1], rot: [-2, 48, 0] },
+          { name: '炮塔尾部', face: 'rear', t: 152, pos: [0, 2.42, -1.5], size: [1.9, 1], rot: [5, 0, 0] },
+          { name: '炮塔侧面', face: 'side', t: 152, pos: [1, 2.42, -0.3], size: [2.2, 1], rot: [0, 90, 0], mirror: true },
+          { name: '炮塔顶', face: 'top', t: 25, pos: [0, 2.95, -0.3], size: [2, 2.6], rot: [-90, 0, 0] },
+        ],
+        extras: [],
+      },
+    },
+    mgCaliber: '12.7',
+    mg: { rate: 8, dispersion: 0.014, range: 600, ammoMax: 2600 },
+    internal: {
+      crew: [
+        { id: 'commander', name: '车长',   x: 0.45,  y: 2.3,  z: -0.3,  r: 0.34 },
+        { id: 'gunner',    name: '炮手',   x: 0.4,   y: 2.25, z: 0.42,  r: 0.32 },
+        { id: 'loader',    name: '装填手', x: -0.5,  y: 2.25, z: -0.05, r: 0.34 },
+        { id: 'driver',    name: '驾驶员', x: -0.55, y: 1.3,  z: 2,     r: 0.34 },
+        { id: 'radio',     name: '通讯员', x: 0.55,  y: 1.3,  z: 2,     r: 0.34 },
+      ],
+      modules: {
+        engine:      [{ x: 0,     y: 1.08, z: -1.9,  r: 0.65 }],
+        fuel:        [{ x: -0.8,  y: 1.22, z: -2,    r: 0.45 }, { x: 0.8, y: 1.22, z: -2, r: 0.45 }],
+        ammoRacks:   [{ x: -0.55, y: 0.85, z: 0.1,   r: 0.5 }, { x: 0.61, y: 0.95, z: -0.13, r: 0.5 }],
+        breech:      [{ x: 0,     y: 2.3,  z: 0.58,  r: 0.4 }],
+        turretDrive: [{ x: 0.3,   y: 2,    z: 0.58,  r: 0.36 }],
+        optics:      [{ x: 0.25,  y: 2.35, z: 0.6,   r: 0.3 }],
+      },
+      ringY: 1.9,
+      trackX: 1.05, trackY: 1.12,
+    },
+    dims: { length: 5.9, width: 2.76, hullHeight: 1.96, turretTop: 2.95 },
+    trackWidth: 0.58,
+    ammo: { shell: 71, mg: 2600 },
+    sound: {
+      drive: 'tankSound/usa/m4-egDown.mp3',                 // 复用 M4 系引擎（用户指定）
+      mg: 'sound/t90-gun.mp3',
+      fire: 'tankSound/usa/us-76mm-fire.mp3',
+      fireAim: 'tankSound/usa/us-76mm-inner.mp3',
+      seg: { mgLoopStart: 0.03, mgLoopEnd: 0.09, driveAccel: 3.0, driveCruiseEnd: 17.4, driveDecelStart: 17.4, driveDecelEnd: 20.0 },
+    },
+  },
+  // ── M4A3E8 "Thunderbolt VII"（2026-10-09 接入，第 26 辆；HVSS 宽履带，阿布拉姆斯座驾） ──
+  'thunderbolt': {
+    caliber: 76,
+    id: 'thunderbolt',
+    nation: 'us',
+    reticle: 'us2',
+    zoomFov: 20.7,
+    aiRole: 'brawler',
+    aiTraits: { movingFire: true },                   // 垂稳 + HVSS：行进间开火许可
+    name: 'M4A3E8 谢尔曼 "雷电七号"',
+    nameEn: 'M4A3E8 Thunderbolt VII',
+    model: 'model/opt/m4a3e8.glb',
+    scale: 1.0,
+    parts: {
+      turret: ['Object_7'],          // md 标注：炮塔结构（整塔；车顶机枪已切出为 roofMg）
+      mg: ['roofMg'],                // 车顶 M2HB——右键发射（Object_7 元件级质心拆分）
+      barrel: ['Object_2'],          // 火炮结构+炮管
+      track: ['Object_8', 'Object_3'],
+      wheels: ['wheelL1', 'wheelL2', 'wheelL3', 'wheelL4', 'wheelL5', 'wheelL6',
+               'wheelR1', 'wheelR2', 'wheelR3', 'wheelR4', 'wheelR5', 'wheelR6',
+               'wheelLS', 'wheelRS', 'wheelLI', 'wheelRI',
+               'wheelLT1', 'wheelLT2', 'wheelRT1', 'wheelRT2'],   // HVSS 含回转轮
+    },
+    // 枢轴实测（2026-10-09 measure-td）：座圈圆心 z-0.19；炮管轴 y2.332 炮口 z4.05
+    turretPivot: [0, 2.0, -0.19],
+    barrelPivot: [0, 2.33, 0.90],
+    muzzleLocal: [0, 2.33, 4.05],
+    exhaustLocal: [[0.27, 0.71, -2.36], [-0.19, 0.69, -2.37]],   // md 排气烟点×2.56
+    trackLocal: [[-1.1, 0.1, 0], [1.1, 0.1, 0]],
+    trackScrollAxis: 'y',       // 实测纵向=V，底段不翻
+    mass: 30300,
+    engineHp: 500,
+    maxSpeedForward: 42 / 3.6,
+    maxSpeedReverse: 8 / 3.6,
+    maxSpeed: 42 / 3.6,
+    offroadK: 0.66,             // HVSS 宽履带：越野 ≈28km/h（略优于 VVSS）
+    revSpeed: 2.2,
+    enginePower: 3.5,
+    powerFalloff: 0.58,
+    clutchDelay: 0.4,
+    engineBrake: 1.6,
+    brakeDecel: 6.5,
+    turnDrag: 0.42,
+    slopePower: 0.55,
+    hullTraverse: 0.65,
+    turretTraverse: 0.35,
+    gunDepression: -10.0,
+    gunElevation: 25.0,
+    wheelsRotate: true,
+    gyroStab: true,
+    gunCaliber: 76,
+    shellName: 'M62 APC',
+    shellNameCn: '被帽穿甲弹',
+    shellVelocity: 792,
+    shellPen: 105,
+    shellPenDrop: 0.14,
+    apcrShell: { name: 'M93 HVAP', nameCn: '钨芯穿甲弹', velocity: 1036, pen: 178, penDrop: 0.22 },
+    heShellName: 'M42A1',
+    heVelocity: 820,
+    loadout: { ap: 35, apcr: 5, he: 31 },
+    spallPower: 100,
+    reloadTime: 6.0,
+    dispersion: 0.00033,
+    aimTime: 1.9,
+    armor: {
+      hullFront: 64, hullSide: 38, hullRear: 38, hullTop: 19,    // 首上 63.5@47°
+      turretFront: 89, turretSide: 51, turretRear: 51,
+    },
+    armorModel: {
+      hull: {
+        box: { x0: -1.45, x1: 1.45, y0: 0.05, y1: 2.03, z0: -3.48, z1: 2.85 },
+        plates: [
+          { name: '首上(大倾角)', face: 'front', t: 64, pos: [0, 1.48, 2.35], size: [2.72, 1.36], rot: [-47, 0, 0] },
+          { name: '首下', face: 'front', t: 64, pos: [0, 0.72, 2.62], size: [2.7, 0.78], rot: [30, 0, 0] },
+          { name: '车尾', face: 'rear', t: 38, pos: [0, 1.1, -2.95], size: [2.7, 1.7], rot: [10, 0, 0] },
+          { name: '侧上', face: 'side', t: 38, pos: [1.4, 1.5, 0], size: [6.0, 0.85], rot: [0, 90, 0], mirror: true },
+          { name: '行走部', face: 'side', t: 19, pos: [1.4, 0.68, 0], size: [6.0, 0.9], rot: [0, 90, 0], mirror: true, track: true },
+          { name: '车顶', face: 'top', t: 19, pos: [0, 2.0, -0.2], size: [2.8, 5.9], rot: [-90, 0, 0] },
+        ],
+        extras: [],
+      },
+      turret: {
+        box: { x0: -0.95, x1: 0.95, y0: 2.0, y1: 3.0, z0: -1.0, z1: 1.1 },
+        plates: [
+          { name: '炮盾', face: 'front', t: 89, pos: [0, 2.45, 1.4], size: [1.3, 0.95], rot: [6.5, 0, 0] },
+          { name: '炮塔正面', face: 'front', t: 64, pos: [-0.72, 2.45, 1.1], size: [0.9, 0.95], rot: [-1.5, -54, 0] },
+          { name: '炮塔正面', face: 'front', t: 64, pos: [0.72, 2.45, 1.1], size: [0.9, 0.95], rot: [-1.5, 54, 0] },
+          { name: '炮塔尾部', face: 'rear', t: 51, pos: [0, 2.45, -0.85], size: [1.8, 0.95], rot: [5, 0, 0] },
+          { name: '炮塔侧面', face: 'side', t: 51, pos: [0.98, 2.45, 0.05], size: [1.9, 0.95], rot: [0, 90, 0], mirror: true },
+          { name: '炮塔顶', face: 'top', t: 19, pos: [0, 2.95, 0.1], size: [2.0, 2.2], rot: [-90, 0, 0] },
+        ],
+        extras: [],
+      },
+    },
+    mgCaliber: '12.7',
+    internal: {
+      crew: [
+        { id: 'commander', name: '车长',   x: 0.45,  y: 2.35, z: -0.35, r: 0.34 },
+        { id: 'gunner',    name: '炮手',   x: 0.40,  y: 2.30, z: 0.40,  r: 0.32 },
+        { id: 'loader',    name: '装填手', x: -0.50, y: 2.30, z: -0.05, r: 0.34 },
+        { id: 'driver',    name: '驾驶员', x: -0.55, y: 1.35, z: 1.95,  r: 0.34 },
+        { id: 'radio',     name: '通讯员', x: 0.55,  y: 1.35, z: 1.95,  r: 0.34 },
+      ],
+      modules: {
+        engine:      [{ x: 0,     y: 1.10, z: -1.85,  r: 0.65 }],
+        fuel:        [{ x: -0.80, y: 1.25, z: -1.95,  r: 0.45 }, { x: 0.80, y: 1.25, z: -1.95, r: 0.45 }],
+        ammoRacks:   [{ x: -0.55, y: 0.85, z: 0.10,  r: 0.50 }, { x: 0.61, y: 0.95, z: -0.13, r: 0.50 }],
+        breech:      [{ x: 0,     y: 2.35, z: 0.87,  r: 0.40 }],
+        turretDrive: [{ x: 0.30,  y: 2.05, z: 0.58,  r: 0.36 }],
+        optics:      [{ x: 0.25,  y: 2.40, z: 0.60,  r: 0.30 }],
+      },
+      ringY: 2.0,
+      trackX: 1.1, trackY: 1.12,
+    },
+    dims: { length: 5.84, width: 2.99, hullHeight: 2.0, turretTop: 2.98 },
+    trackWidth: 0.6,              // HVSS 宽履带 23in
+    ammo: { shell: 71, mg: 2600 },
+    sound: {
+      drive: 'tankSound/usa/m4-egDown.mp3',                 // 复用 M4 系引擎（用户指定）
+      mg: 'sound/t90-gun.mp3',
+      fire: 'tankSound/usa/us-76mm-fire.mp3',
+      fireAim: 'tankSound/usa/us-76mm-inner.mp3',
+      seg: { mgLoopStart: 0.03, mgLoopEnd: 0.09, driveAccel: 3.0, driveCruiseEnd: 17.4, driveDecelStart: 17.4, driveDecelEnd: 20.0 },
+    },
+  },
+  // ── Sherman Firefly（2026-10-09 接入，第 27 辆；英系：17 磅炮，无首机枪/4 乘员史实） ──
+  'firefly': {
+    caliber: 76,             // 17 磅 = 76.2mm（跳弹口径碾压用）
+    id: 'firefly',
+    nation: 'uk',
+    reticle: 'us2',           // No.43 望远镜（暂用 M82 静态分划，与克伦威尔同款处理）
+    zoomFov: 20.7,
+    aiRole: 'ambusher',       // 史实用法：伏击坦歼——开火后撤掩
+    aiTraits: { fireAndCover: true },
+    name: '谢尔曼 萤火虫',
+    nameEn: 'Sherman Firefly',
+    model: 'model/opt/sherman_firefly.glb',
+    scale: 1.0,
+    parts: {
+      turret: ['Object_10', 'Object_5', 'Object_11', 'Object_22', 'Object_4', 'Object_12', 'Object_7'],
+      mg: ['Object_21'],       // 同轴/车顶机枪（md 标注同轴机枪）
+      barrel: ['Object_8', 'Object_3'],   // 炮管+炮口制退器
+      track: ['Object_6', 'Object_2'],
+      wheels: ['wheelL1', 'wheelL2', 'wheelL3', 'wheelL4', 'wheelL5', 'wheelL6',
+               'wheelR1', 'wheelR2', 'wheelR3', 'wheelR4', 'wheelR5', 'wheelR6',
+               'wheelLS', 'wheelRS', 'wheelLI', 'wheelRI'],
+      // md 标注隐藏件：Object_13/14/23（变体件）
+      hidden: ['Object_13', 'Object_14', 'Object_23'],
+    },
+    // 枢轴实测（2026-10-09 measure-td）：座圈圆心 z-0.18；炮管轴 y2.127 炮口 z4.44
+    turretPivot: [0, 1.98, -0.18],
+    barrelPivot: [0, 2.13, 0.90],
+    muzzleLocal: [0, 2.13, 4.44],
+    exhaustLocal: [[0.30, 0.71, -2.60], [-0.21, 0.74, -2.60]],   // md 排气烟点×2.56
+    trackLocal: [[-1.05, 0.1, 0], [1.05, 0.1, 0]],
+    trackScrollAxis: 'y',       // 实测纵向=V 底段 flip
+    trackScrollFlip: true,
+    mass: 32500,                 // M4A4 底盘（Vc）
+    engineHp: 425,               // Chrysler A57 多联
+    maxSpeedForward: 40 / 3.6,
+    maxSpeedReverse: 8 / 3.6,
+    maxSpeed: 40 / 3.6,
+    offroadK: 0.58,
+    revSpeed: 2.2,
+    enginePower: 3.3,
+    powerFalloff: 0.58,
+    clutchDelay: 0.4,
+    engineBrake: 1.6,
+    brakeDecel: 6.5,
+    turnDrag: 0.42,
+    slopePower: 0.55,
+    hullTraverse: 0.62,
+    turretTraverse: 0.28,        // 17 磅炮塔重、手摇+电液混合
+    gunDepression: -5.0,         // 史实：萤火虫俯角仅 -5°（17 磅炮尾干涉）
+    gunElevation: 20.0,
+    wheelsRotate: true,
+    gyroStab: false,             // 萤火虫拆除垂稳（17 磅炮尾配平）
+    gunCaliber: 76,
+    shellName: 'APCBC Mk.8',
+    shellNameCn: '被帽穿甲弹',
+    shellVelocity: 884,          // 17pdr Mk.8 被帽穿甲弹初速
+    shellPen: 148,               // mm RHA @0m（30° 基准：史实30° 134@500/122@1000/111@1500/101@2000）——强于 88L56、弱于 88L71
+    shellPenDrop: 0.12,
+    apcrShell: { name: 'APDS Mk.1', nameCn: '脱壳穿甲弹', velocity: 1204, pen: 209, penDrop: 0.28 },  // APDS（远端衰减快、精度差——史实）
+    heShellName: 'HE Mk.1',
+    heVelocity: 884,
+    loadout: { ap: 50, apcr: 5, he: 22 },   // 77 发史实基数（APDS 稀有）
+    spallPower: 105,
+    reloadTime: 7.0,             // 17 磅弹药大、炮塔局促
+    dispersion: 0.00025,         // 17pdr 精度高
+    aimTime: 2.2,
+    armor: {
+      hullFront: 51, hullSide: 38, hullRear: 38, hullTop: 19,    // 标准谢尔曼：首上 51@56°
+      turretFront: 76, turretSide: 51, turretRear: 51,
+    },
+    armorModel: {
+      hull: {
+        box: { x0: -1.32, x1: 1.32, y0: 0, y1: 1.9, z0: -3.45, z1: 2.83 },
+        plates: [
+          { name: '首上(大倾角)', face: 'front', t: 51, pos: [0, 1.42, 2.42], size: [2.56, 1.36], rot: [-56, 0, 0] },
+          { name: '首下', face: 'front', t: 51, pos: [0, 0.65, 2.7], size: [2.52, 0.75], rot: [30, 0, 0] },
+          { name: '车尾', face: 'rear', t: 38, pos: [0, 1.05, -2.85], size: [2.52, 1.65], rot: [10, 0, 0] },
+          { name: '侧上', face: 'side', t: 38, pos: [1.26, 1.48, 0], size: [5.8, 0.8], rot: [0, 90, 0], mirror: true },
+          { name: '行走部', face: 'side', t: 19, pos: [1.26, 0.66, 0], size: [5.8, 0.88], rot: [0, 90, 0], mirror: true, track: true },
+          { name: '车顶', face: 'top', t: 19, pos: [0, 1.9, 0], size: [2.52, 5.8], rot: [-90, 0, 0] },
+        ],
+        extras: [],
+      },
+      turret: {
+        box: { x0: -0.92, x1: 0.92, y0: 1.9, y1: 2.97, z0: -0.95, z1: 1.1 },
+        plates: [
+          { name: '炮盾', face: 'front', t: 89, pos: [0, 2.4, 1.35], size: [1.25, 0.95], rot: [6.5, 0, 0] },
+          { name: '炮塔正面', face: 'front', t: 76, pos: [-0.7, 2.4, 1.08], size: [0.9, 0.95], rot: [-1.5, -52, 0] },
+          { name: '炮塔正面', face: 'front', t: 76, pos: [0.7, 2.4, 1.08], size: [0.9, 0.95], rot: [-1.5, 52, 0] },
+          { name: '炮塔尾部', face: 'rear', t: 51, pos: [0, 2.4, -0.8], size: [1.78, 0.95], rot: [5, 0, 0] },
+          { name: '炮塔侧面', face: 'side', t: 51, pos: [0.95, 2.4, 0.05], size: [1.85, 0.95], rot: [0, 90, 0], mirror: true },
+          { name: '炮塔顶', face: 'top', t: 19, pos: [0, 2.9, 0.1], size: [2, 2.3], rot: [-90, 0, 0] },
+        ],
+        extras: [],
+      },
+    },
+    mgCaliber: '12.7',
+    mg: { rate: 8, dispersion: 0.014, range: 600, ammoMax: 2000 },
+    internal: {
+      crew: [   // 史实 4 乘员：无前机枪手（弹药库占首位），电台移炮塔尾
+        { id: 'commander', name: '车长',   x: 0.45,  y: 2.28, z: -0.3,  r: 0.34 },
+        { id: 'gunner',    name: '炮手',   x: 0.4,   y: 2.2,  z: 0.42,  r: 0.32 },
+        { id: 'loader',    name: '装填手', x: -0.5,  y: 2.2,  z: -0.05, r: 0.34 },
+        { id: 'driver',    name: '驾驶员', x: -0.55, y: 1.3,  z: 2,     r: 0.34 },
+      ],
+      modules: {
+        engine:      [{ x: 0,     y: 1.08, z: -1.9,  r: 0.65 }],
+        fuel:        [{ x: -0.8,  y: 1.22, z: -2,    r: 0.45 }, { x: 0.8, y: 1.22, z: -2, r: 0.45 }],
+        ammoRacks:   [{ x: -0.55, y: 0.85, z: 0.1,   r: 0.5 }, { x: 0, y: 2.05, z: -0.34, r: 0.45 }],   // 车底+炮塔尾（萤火虫特征）
+        breech:      [{ x: 0,     y: 2.2,  z: 0.8,   r: 0.42 }],
+        turretDrive: [{ x: 0.3,   y: 1.98, z: 0.55,  r: 0.36 }],
+        optics:      [{ x: 0.25,  y: 2.28, z: 0.6,   r: 0.3 }],
+      },
+      ringY: 1.98,
+      trackX: 1.05, trackY: 1.12,
+    },
+    dims: { length: 5.89, width: 2.62, hullHeight: 1.90, turretTop: 2.97 },
+    trackWidth: 0.58,
+    ammo: { shell: 77, mg: 2000 },
+    sound: {
+      drive: 'tankSound/usa/m4-egDown.mp3',                 // 复用 M4 系引擎（用户指定）
+      mg: 'sound/t90-gun.mp3',
+      fire: 'tankSound/usa/us-76mm-fire.mp3',
+      fireAim: 'tankSound/usa/us-76mm-inner.mp3',
+      seg: { mgLoopStart: 0.03, mgLoopEnd: 0.09, driveAccel: 3.0, driveCruiseEnd: 17.4, driveDecelStart: 17.4, driveDecelEnd: 20.0 },
+    },
+  },
   'panther': {
     caliber: 75,             // mm 主炮口径（跳弹口径碾压用）
     id: 'panther',
