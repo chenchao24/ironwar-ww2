@@ -752,18 +752,18 @@ fireAim: 'tankSound/gem/pz62-tiger2-88mm-inner.mp3',     // 瞄准镜开炮：88
     dispersion: 0.00033,
     aimTime: 1.9,
     armor: {
-      hullFront: 64, hullSide: 38, hullRear: 38, hullTop: 19,    // 首上 63.5@47°
-      turretFront: 89, turretSide: 51, turretRear: 51,
+      hullFront: 123, hullSide: 68, hullRear: 38, hullTop: 19,   // 雷电七号战场改装附加甲（编辑器 2026-10-09 定稿）
+      turretFront: 121, turretSide: 63, turretRear: 51,
     },
     armorModel: {
       hull: {
         box: { x0: -1.45, x1: 1.45, y0: 0.05, y1: 2.03, z0: -3.48, z1: 2.85 },
         plates: [
-          { name: '首上(大倾角)', face: 'front', t: 64, pos: [0, 1.48, 2.35], size: [2.72, 1.36], rot: [-47, 0, 0] },
-          { name: '首下', face: 'front', t: 64, pos: [0, 0.72, 2.62], size: [2.7, 0.78], rot: [30, 0, 0] },
+          { name: '首上(大倾角)', face: 'front', t: 123, pos: [0, 1.48, 2.35], size: [2.72, 1.36], rot: [-47, 0, 0] },
+          { name: '首下', face: 'front', t: 87, pos: [0, 0.72, 2.62], size: [2.7, 0.78], rot: [30, 0, 0] },
           { name: '车尾', face: 'rear', t: 38, pos: [0, 1.1, -2.95], size: [2.7, 1.7], rot: [10, 0, 0] },
-          { name: '侧上', face: 'side', t: 38, pos: [1.4, 1.5, 0], size: [6.0, 0.85], rot: [0, 90, 0], mirror: true },
-          { name: '行走部', face: 'side', t: 19, pos: [1.4, 0.68, 0], size: [6.0, 0.9], rot: [0, 90, 0], mirror: true, track: true },
+          { name: '侧上', face: 'side', t: 68, pos: [1.4, 1.5, 0], size: [6.0, 0.85], rot: [0, 90, 0], mirror: true },
+          { name: '行走部', face: 'side', t: 51, pos: [1.4, 0.68, 0], size: [6.0, 0.9], rot: [0, 90, 0], mirror: true, track: true },
           { name: '车顶', face: 'top', t: 19, pos: [0, 2.0, -0.2], size: [2.8, 5.9], rot: [-90, 0, 0] },
         ],
         extras: [],
@@ -771,11 +771,11 @@ fireAim: 'tankSound/gem/pz62-tiger2-88mm-inner.mp3',     // 瞄准镜开炮：88
       turret: {
         box: { x0: -0.95, x1: 0.95, y0: 2.0, y1: 3.0, z0: -1.0, z1: 1.1 },
         plates: [
-          { name: '炮盾', face: 'front', t: 89, pos: [0, 2.45, 1.4], size: [1.3, 0.95], rot: [6.5, 0, 0] },
+          { name: '炮盾', face: 'front', t: 121, pos: [0, 2.45, 1.4], size: [1.3, 0.95], rot: [6.5, 0, 0] },
           { name: '炮塔正面', face: 'front', t: 64, pos: [-0.72, 2.45, 1.1], size: [0.9, 0.95], rot: [-1.5, -54, 0] },
           { name: '炮塔正面', face: 'front', t: 64, pos: [0.72, 2.45, 1.1], size: [0.9, 0.95], rot: [-1.5, 54, 0] },
           { name: '炮塔尾部', face: 'rear', t: 51, pos: [0, 2.45, -0.85], size: [1.8, 0.95], rot: [5, 0, 0] },
-          { name: '炮塔侧面', face: 'side', t: 51, pos: [0.98, 2.45, 0.05], size: [1.9, 0.95], rot: [0, 90, 0], mirror: true },
+          { name: '炮塔侧面', face: 'side', t: 63, pos: [0.98, 2.45, 0.05], size: [1.9, 0.95], rot: [0, 90, 0], mirror: true },
           { name: '炮塔顶', face: 'top', t: 19, pos: [0, 2.95, 0.1], size: [2.0, 2.2], rot: [-90, 0, 0] },
         ],
         extras: [],
@@ -2204,6 +2204,422 @@ fireAim: 'tankSound/gem/75mm-long-inner.mp3',            // 瞄准镜开炮：75
       mg: 'sound/t90-gun.mp3',
       fire: 'tankSound/rus/t34-85mm-fire1.mp3',           // 第三人称开炮：85mm ZiS-S-53
       fireAim: 'tankSound/rus/t34-85mm-inner.mp3',         // 瞄准镜开炮：85mm 炮膛内声
+      seg: { mgLoopStart: 0.03, mgLoopEnd: 0.09, driveAccel: 4.9, driveCruiseEnd: 13.24, driveDecelStart: 13.8 },
+    },
+  },
+
+  // ── T-34-85（精英）特型（苏）────────────────────
+  // 精英车组特型：装甲模型/火力/机动参数与 t34-85 完全一致；装填 -0.8s、极速 +15%（53→61km/h）、
+  // 炮塔转速 +10%（0.30→0.33）。新模型 tankModel/t-34-85.glb（同 Sketchfab 作者 T-34 族）：
+  // 轮系 scripts/split-wheels-td.js t3485e 离线切出（14 轮：5 负重轮/后主动/前诱导每侧；
+  // Object_20/25 各焊死前诱导+后主动，Object_24/30 混入塔顶/翼子板散件已归桶退回车体）；
+  // Object_13 双 DT 合并件按 y 分簇：下簇 hullMgDt（车体前机枪 F）/ 上簇同轴 DT（随炮塔，右键）
+  't34-85e': {
+    caliber: 85,
+    id: 't34-85e',
+    nation: 'ru',
+    reticle: 'su2',           // TSh-16 望远镜静态分划
+    zoomFov: 15.5,            // TSh-16 固定 4× 视场
+    aiRole: 'brawler',
+    aiTraits: { preferRangeK: 0.6 },
+    name: 'T-34-85（精英）',
+    nameEn: 'T-34-85 Elite',
+    model: 'model/opt/t3485e.glb',
+    scale: 1.0,               // 实测全长 8.33m 含炮管（实车 8.15m）≈1:1
+    forwardAxis: '+z',        // 模型已 +Z 朝前、+Y 朝上，无需烘焙
+    modelYOffset: 0.064,      // 模型履带底 -0.064（2026-10-09 实测沉地），抬升到履带接地
+    // —— 部件节点名（Tank Model Maker v2.3 标注，见 tankModel/t-34-85.md）——
+    parts: {
+      turret: ['Object_14', 'Object_15', 'Object_9', 'Object_4'],   // 炮塔结构+车长塔+天线
+      mg: ['Object_13'],        // 同轴 DT（split 后仅上簇，随炮塔）——右键发射
+      hullMg: ['hullMgDt'],     // 车体前 DT（split 下簇）——F 发射·射界内自动瞄准
+      barrel: ['Object_12', 'Object_6'],   // 85mm ZiS-S-53 炮管+炮口段（随俯仰）
+      track: ['Object_2', 'Object_7'],
+      wheels: ['wheelR1', 'wheelR2', 'wheelR3', 'wheelR4', 'wheelR5',
+               'wheelL1', 'wheelL2', 'wheelL3', 'wheelL4', 'wheelL5',
+               'wheelRS', 'wheelLS', 'wheelRI', 'wheelLI'],
+      // md 标注隐藏件：变体/内饰件
+      hidden: ['Object_10', 'Object_11', 'Object_36', 'Object_37'],
+    },
+    turretPivot: [0, 1.60, 0.60],      // 炮塔座圈（环带圆拟合 y1.5~1.62 r0.81）
+    barrelPivot: [-0.03, 2.00, 1.70],  // 炮盾耳轴（炮管轴线实测 y2.00）
+    muzzleLocal: [-0.03, 2.00, 5.14],  // 炮口（Object_12/6 前端实测）
+    exhaustLocal: [[0.42, 0.86, -2.87], [-0.35, 0.85, -2.87]],   // md 排气烟点×2.56
+    trackLocal: [[-1.24, 0.1, 0], [1.24, 0.1, 0]],
+    trackScrollAxis: 'y',       // 履带 UV 纵向=V（vRange 跨 12.2 格）
+    trackScrollFlip: false,     // 实测底段 dv/dz>0：前进 offset 递增即正向
+    mass: 32000,
+    engineHp: 500,               // V-2-34 柴油机
+    maxSpeedForward: 61 / 3.6,   // 精英 +15%：53→61km/h
+    maxSpeedReverse: 8 / 3.6,
+    maxSpeed: 61 / 3.6,
+    offroadK: 0.53,              // 越野极速 ≈32km/h（随公路 +15%）
+    revSpeed: 2.4,
+    enginePower: 4.0,            // 精英动力调校（+15% 加速匹配）
+    powerFalloff: 0.56,
+    clutchDelay: 0.42,
+    engineBrake: 1.6,
+    brakeDecel: 6.5,
+    turnDrag: 0.42,
+    slopePower: 0.58,
+    hullTraverse: 0.45,          // 离合-制动转向：无原位转向（史实短板）
+    turretTraverse: 0.33,        // 精英 +10%：0.30→0.33
+    gunDepression: -5.0,         // 苏系俯角短板
+    gunElevation: 22.0,
+    wheelsRotate: true,
+    gyroStab: false,
+    // —— 火力：85mm ZiS-S-53（与 t34-85 一致；装填 7.5-0.8=6.7s）——
+    gunCaliber: 85,
+    shellName: 'BR-365A APHEBC',
+    shellNameCn: '风帽穿甲弹',
+    shellVelocity: 792,
+    shellPen: 112,               // mm RHA @0m（30° 口径基准：史实30° 103@500/94@1000/86@1500/77@2000）
+    shellPenDrop: 0.16,
+    apcrShell: { name: 'BR-365P APCR', nameCn: '钨芯穿甲弹', velocity: 1030, pen: 132, penDrop: 0.33 },
+    heShellName: 'O-365K',
+    heVelocity: 792,
+    loadout: { ap: 30, apcr: 4, he: 26 },
+    spallPower: 115,
+    reloadTime: 6.7,             // 精英车组装填 -0.8s（7.5→6.7）
+    dispersion: 0.00045,
+    aimTime: 2.1,
+    // —— 装甲（mm RHA；与 t34-85 完全一致）——
+    armor: {
+      hullFront: 45,  hullSide: 45, hullRear: 45, hullTop: 20,
+      turretFront: 90, turretSide: 75, turretRear: 52,
+    },
+    // —— 装甲判定模型（板图 v2；用户指定与现有 t34-85 一致，整块沿用）——
+    armorModel: {
+      hull: {
+        box: { x0: -1.2, x1: 1.2, y0: 0.44, y1: 1.77, z0: -2.93, z1: 3.10 },
+        plates: [
+          { name: '首上(大倾角)', face: 'front', t: 45, pos: [0, 1.24, 2.31], size: [2.4, 1.88], rot: [-60, 0, 0] },
+          { name: '首下', face: 'front', t: 45, pos: [0, 0.61, 2.73], size: [2.4, 0.75], rot: [50, 0, 0] },
+          { name: '车尾', face: 'rear', t: 45, pos: [0, 1.13, -2.74], size: [2.4, 1.55], rot: [35, 0, 0] },
+          { name: '侧上', face: 'side', t: 45, pos: [1.2, 1.35, 0], size: [6.0, 0.9], rot: [0, 90, 0], mirror: true },
+          { name: '行走部', face: 'side', t: 20, pos: [1.23, 0.65, 0], size: [6.0, 0.8], rot: [0, 90, 0], mirror: true, track: true },
+          { name: '车顶', face: 'top', t: 20, pos: [0, 1.77, 0], size: [2.4, 6.0], rot: [-90, 0, 0] },
+        ],
+        extras: [],
+      },
+      turret: {
+        box: { x0: -1.02, x1: 1.02, y0: 1.6, y1: 2.72, z0: -0.83, z1: 1.99 },
+        plates: [
+          { name: '炮盾', face: 'front', t: 90, pos: [0, 2.13, 2.02], size: [1.15, 0.67], rot: [0, 0, 0] },
+          { name: '炮塔正面', face: 'front', t: 90, pos: [0, 2.15, 1.5], size: [1.9, 0.85], rot: [-10, 0, 0] },
+          { name: '炮塔尾部', face: 'rear', t: 52, pos: [0, 2.15, -0.75], size: [1.9, 0.9], rot: [5, 0, 0] },
+          { name: '炮塔侧面', face: 'side', t: 75, pos: [0.95, 2.15, 0.41], size: [2.38, 0.9], rot: [0, 90, 0], mirror: true },
+          { name: '炮塔顶', face: 'top', t: 20, pos: [0, 2.52, 0.5], size: [2.0, 2.6], rot: [-90, 0, 0] },
+        ],
+        extras: [],
+      },
+    },
+    mgCaliber: '7.62',
+    mg: { rate: 10, dispersion: 0.016, range: 550, ammoMax: 1900 },
+    hullMgArc: 0.26,
+    internal: {
+      crew: [
+        { id: 'commander', name: '车长',   x: -0.30, y: 2.10, z: 0.30,  r: 0.33 },
+        { id: 'gunner',    name: '炮手',   x: -0.30, y: 2.20, z: 0.90,  r: 0.30 },
+        { id: 'loader',    name: '装填手', x: 0.40,  y: 2.20, z: 0.50,  r: 0.33 },
+        { id: 'driver',    name: '驾驶员', x: -0.45, y: 1.10, z: 1.57,  r: 0.33 },
+        { id: 'radio',     name: '通讯员', x: 0.45,  y: 1.10, z: 1.50,  r: 0.33 },
+      ],
+      modules: {
+        engine:      [{ x: 0,     y: 1.00, z: -1.82,  r: 0.57 }],
+        fuel:        [{ x: -0.85, y: 1.10, z: -0.90,  r: 0.42 }, { x: 0.85, y: 1.10, z: -0.90, r: 0.42 }],
+        ammoRacks:   [{ x: 0.60,  y: 1.29, z: 0.72,  r: 0.44 }, { x: 0, y: 1.90, z: -0.33, r: 0.33 }],
+        breech:      [{ x: 0,     y: 2.05, z: 1.30,  r: 0.32 }],
+        turretDrive: [{ x: -0.25, y: 1.60, z: 0.30,  r: 0.34 }],
+        optics:      [{ x: -0.25, y: 2.14, z: 1.10,  r: 0.28 }],
+      },
+      ringY: 1.60,
+      trackX: 1.24, trackY: 1.00,
+    },
+    dims: { length: 6.03, width: 3.0, hullHeight: 1.77, turretTop: 2.72 },
+    trackWidth: 0.54,
+    ammo: { shell: 60, mg: 1900 },
+    sound: {
+      drive: 'tankSound/rus/t34-egAll.mp3',                // 新式发动机（单文件三段，与 T-34-85/SU-100 共用）
+      mg: 'sound/t90-gun.mp3',
+      fire: 'tankSound/rus/t34-85mm-fire1.mp3',           // 第三人称开炮：85mm ZiS-S-53
+      fireAim: 'tankSound/rus/t34-85mm-inner.mp3',         // 瞄准镜开炮：85mm 炮膛内声
+      seg: { mgLoopStart: 0.03, mgLoopEnd: 0.09, driveAccel: 4.9, driveCruiseEnd: 13.24, driveDecelStart: 13.8 },
+    },
+  },
+
+  // ── T-34-57（1943）（苏）────────────────────
+  // 1943 年复产的长身管反坦克特化型：57mm ZiS-4 L/73（高初速平弹道）+ 1943 型铸造炮塔。
+  // 轮系：scripts/split-wheels-td.js t3457（Object_11 全轮系焊死合并件 → 14 轮）；
+  // Object_10 双 DT 合并件按 y 分簇：下簇 hullMgDt（车体前机枪 F）/ 上簇同轴 DT（随炮塔，右键）
+  't34-57': {
+    caliber: 57,
+    id: 't34-57',
+    nation: 'ru',
+    reticle: 'su2',
+    zoomFov: 15.5,
+    aiRole: 'brawler',
+    aiTraits: { preferRangeK: 0.9 },                    // 高穿长管炮：偏好中远距对射
+    name: 'T-34-57（1943）',
+    nameEn: 'T-34-57 1943',
+    model: 'model/opt/t3457.glb',
+    scale: 1.0,               // 实测全长 7.57m 含炮管 ≈1:1
+    forwardAxis: '+z',
+    // —— 部件节点名（Tank Model Maker v2.3 标注，见 tankModel/t-34-57_1943.md）——
+    parts: {
+      turret: ['Object_9'],                              // 炮塔结构（整塔）
+      mg: ['Object_10'],        // 同轴 DT（split 后仅上簇，随炮塔）——右键发射
+      hullMg: ['hullMgDt'],     // 车体前 DT（split 下簇）——F 发射
+      barrel: ['Object_15', 'Object_2'],                 // ZiS-4 炮管+炮口段（随俯仰）
+      track: ['Object_5', 'Object_6'],
+      wheels: ['wheelR1', 'wheelR2', 'wheelR3', 'wheelR4', 'wheelR5',
+               'wheelL1', 'wheelL2', 'wheelL3', 'wheelL4', 'wheelL5',
+               'wheelRS', 'wheelLS', 'wheelRI', 'wheelLI'],
+    },
+    turretPivot: [-0.03, 1.55, 0.49],  // 炮塔座圈（环带圆拟合 y1.57~1.69）
+    barrelPivot: [0.01, 2.03, 1.45],   // 炮盾耳轴（炮管轴线实测 y2.03）
+    muzzleLocal: [0.01, 2.03, 4.55],   // 炮口（Object_2 前端实测）
+    exhaustLocal: [[0.43, 0.89, -3.00], [-0.36, 0.90, -3.01]],   // md 排气烟点×2.56
+    trackLocal: [[-1.26, 0.1, 0], [1.26, 0.1, 0]],
+    trackScrollAxis: 'y',       // 履带 UV 纵向=V（vRange 跨 12.1 格）
+    trackScrollFlip: true,      // 底段 dv/dz<0：前进时 offset 须递减
+    // —— 实车性能 ——
+    mass: 28100,                // 战斗全重 ≈28.1t（比 85 型轻）
+    engineHp: 500,              // V-2-34 柴油机
+    maxSpeedForward: 53 / 3.6,
+    maxSpeedReverse: 8 / 3.6,
+    maxSpeed: 53 / 3.6,         // 公路（史实，T-34 族标准）
+    offroadK: 0.55,             // 越野极速 ≈29km/h（较轻车体略优）
+    revSpeed: 2.4,
+    enginePower: 3.6,           // 17.8hp/t
+    powerFalloff: 0.56,
+    clutchDelay: 0.42,
+    engineBrake: 1.6,
+    brakeDecel: 6.5,
+    turnDrag: 0.42,
+    slopePower: 0.58,
+    hullTraverse: 0.45,
+    turretTraverse: 0.22,       // 双人炮塔（1943 部分电动）≈13°/s
+    gunDepression: -5.0,        // 苏系俯角短板
+    gunElevation: 25.0,
+    wheelsRotate: true,
+    gyroStab: false,
+    // —— 火力：57mm ZiS-4 L/73 ——
+    gunCaliber: 57,
+    shellName: 'BR-271K APHEBC',
+    shellNameCn: '风帽穿甲弹',
+    shellVelocity: 990,
+    shellPen: 98,                // mm RHA @0m（30° 口径基准：史实30° ≈88@500/57@2000 两点拟合）
+    shellPenDrop: 0.21,          // 每千米穿深衰减比例（小口径高初速衰减偏快）
+    apcrShell: { name: 'BR-271P APCR', nameCn: '钨芯穿甲弹', velocity: 1150, pen: 140, penDrop: 0.36 },  // 次口径钨芯弹（3 键；远端衰减快）
+    heShellName: 'O-271',
+    heVelocity: 990,             // HE 初速逐炮族（史实 ≈AP 初速）
+    loadout: { ap: 56, apcr: 4, he: 40 },   // 100 发编制（反坦克型 AP 为主）
+    spallPower: 85,              // 57mm 小装药，后效弱
+    reloadTime: 5.5,             // s 人工装填（定装小弹快装）
+    dispersion: 0.00032,         // σ：ZiS-4（高初速平弹道，精度优于 76 苏炮）
+    aimTime: 2.0,
+    // —— 装甲（mm RHA；1943 铸造炮塔加厚正面，车体不变）——
+    armor: {
+      hullFront: 45,  hullSide: 45, hullRear: 45, hullTop: 20,
+      turretFront: 70, turretSide: 52, turretRear: 52,
+    },
+    // —— 装甲判定模型（板图 v2：车体板沿用 T-34 族（45mm 大倾角同构），炮塔按 1943 实测轮廓铺）——
+    armorModel: {
+      hull: {
+        box: { x0: -1.2, x1: 1.2, y0: 0.44, y1: 1.77, z0: -2.93, z1: 3.10 },
+        plates: [
+          { name: '首上(大倾角)', face: 'front', t: 45, pos: [0, 1.24, 2.31], size: [2.4, 1.88], rot: [-60, 0, 0] },
+          { name: '首下', face: 'front', t: 45, pos: [0, 0.61, 2.73], size: [2.4, 0.75], rot: [50, 0, 0] },
+          { name: '车尾', face: 'rear', t: 45, pos: [0, 1.13, -2.74], size: [2.4, 1.55], rot: [35, 0, 0] },
+          { name: '侧上', face: 'side', t: 45, pos: [1.2, 1.35, 0], size: [6.0, 0.9], rot: [0, 90, 0], mirror: true },
+          { name: '行走部', face: 'side', t: 20, pos: [1.23, 0.65, 0], size: [6.0, 0.8], rot: [0, 90, 0], mirror: true, track: true },
+          { name: '车顶', face: 'top', t: 20, pos: [0, 1.77, 0], size: [2.4, 6.0], rot: [-90, 0, 0] },
+        ],
+        extras: [],
+      },
+      turret: {
+        box: { x0: -0.95, x1: 0.95, y0: 1.47, y1: 2.57, z0: -0.65, z1: 1.60 },
+        plates: [
+          { name: '炮盾', face: 'front', t: 70, pos: [0, 2.00, 1.45], size: [1.1, 0.70], rot: [0, 0, 0] },
+          { name: '炮塔正面', face: 'front', t: 70, pos: [-0.60, 1.98, 1.20], size: [0.75, 0.80], rot: [0, -42, 0] },
+          { name: '炮塔正面', face: 'front', t: 70, pos: [0.60, 1.98, 1.20], size: [0.75, 0.80], rot: [0, 42, 0] },
+          { name: '炮塔尾部', face: 'rear', t: 52, pos: [0, 1.95, -0.55], size: [1.6, 0.85], rot: [0, 0, 0] },
+          { name: '炮塔侧面', face: 'side', t: 52, pos: [0.90, 1.95, 0.35], size: [2.1, 0.90], rot: [0, 90, 0], mirror: true },
+          { name: '炮塔顶', face: 'top', t: 20, pos: [0, 2.50, 0.40], size: [1.8, 2.0], rot: [-90, 0, 0] },
+        ],
+        extras: [],
+      },
+    },
+    mgCaliber: '7.62',
+    mg: { rate: 10, dispersion: 0.016, range: 550, ammoMax: 3000 },
+    hullMgArc: 0.26,
+    // —— 内部布局（史实 4 乘员：双人炮塔车长兼炮手；驾驶左前/通讯员右前）——
+    internal: {
+      crew: [
+        { id: 'commander', name: '车长',   x: -0.30, y: 1.95, z: 0.35,  r: 0.33 },
+        { id: 'loader',    name: '装填手', x: 0.40,  y: 1.95, z: 0.20,  r: 0.33 },
+        { id: 'driver',    name: '驾驶员', x: -0.45, y: 1.05, z: 1.60,  r: 0.33 },
+        { id: 'radio',     name: '通讯员', x: 0.45,  y: 1.05, z: 1.50,  r: 0.33 },
+      ],
+      modules: {
+        engine:      [{ x: 0,     y: 0.95, z: -1.90,  r: 0.55 }],
+        fuel:        [{ x: -0.85, y: 1.00, z: -0.70,  r: 0.42 }, { x: 0.85, y: 1.00, z: -0.70, r: 0.42 }],
+        ammoRacks:   [{ x: 0.60,  y: 1.10, z: 0.70,  r: 0.40 }, { x: -0.60, y: 1.10, z: 0.70, r: 0.40 },
+                      { x: 0,     y: 1.85, z: -0.40, r: 0.30 }],
+        breech:      [{ x: 0,     y: 2.00, z: 1.10,  r: 0.32 }],
+        turretDrive: [{ x: -0.25, y: 1.55, z: 0.30,  r: 0.32 }],
+        optics:      [{ x: -0.25, y: 2.05, z: 1.10,  r: 0.26 }],
+      },
+      ringY: 1.55,
+      trackX: 1.26, trackY: 1.00,
+    },
+    dims: { length: 5.92, width: 3.0, hullHeight: 1.72, turretTop: 2.57 },
+    trackWidth: 0.55,
+    ammo: { shell: 100, mg: 3000 },
+    sound: {
+      drive: 'tankSound/rus/t34-egAll.mp3',                // T-34 族同款 V-2 发动机
+      mg: 'sound/t90-gun.mp3',
+      fire: 'tankSound/rus/76mm-fire.mp3',                 // 第三人称开炮：57mm ZiS-4（就近音源）
+      fireAim: 'tankSound/rus/76mm-inner.mp3',             // 瞄准镜开炮：57mm 炮膛内声
+      seg: { mgLoopStart: 0.03, mgLoopEnd: 0.09, driveAccel: 4.9, driveCruiseEnd: 13.24, driveDecelStart: 13.8 },
+    },
+  },
+
+  // ── T-34（1941）（苏）────────────────────
+  // 1941 年型：76.2mm F-34 L/41 + 焊接双人炮塔（45mm 全向）。卫国战争初期的中坦标杆。
+  // 轮系：scripts/split-wheels-td.js t3441（Object_7 全轮系+翼子板杂件合并 → 14 轮，
+  //   radialCap 1.05 排除轮间悬挂短杆）；Object_11 双 DT 合并件按 y 分簇：下簇 hullMgDt / 上簇同轴
+  't34-41': {
+    caliber: 76.2,
+    id: 't34-41',
+    nation: 'ru',
+    reticle: 'su2',
+    zoomFov: 15.5,
+    aiRole: 'brawler',
+    aiTraits: { preferRangeK: 0.7 },                    // 短 76 炮：中近距机动战
+    name: 'T-34（1941）',
+    nameEn: 'T-34 Model 1941',
+    model: 'model/opt/t3441.glb',
+    scale: 1.0,               // 实测全长 6.63m 含炮管（实车 6.68m）≈1:1
+    forwardAxis: '+z',
+    // —— 部件节点名（Tank Model Maker v2.3 标注，见 tankModel/t-34_1941.md）——
+    parts: {
+      turret: ['Object_14', 'Object_12'],                // 炮塔结构（焊接 1941 型）
+      mg: ['Object_11'],        // 同轴 DT（split 后仅上簇，随炮塔）——右键发射
+      hullMg: ['hullMgDt'],     // 车体前 DT（split 下簇）——F 发射
+      barrel: ['Object_13', 'Object_2'],                 // F-34 炮管+炮口段（随俯仰）
+      track: ['Object_3', 'Object_6'],
+      wheels: ['wheelR1', 'wheelR2', 'wheelR3', 'wheelR4', 'wheelR5',
+               'wheelL1', 'wheelL2', 'wheelL3', 'wheelL4', 'wheelL5',
+               'wheelRS', 'wheelLS', 'wheelRI', 'wheelLI'],
+    },
+    turretPivot: [0, 1.55, 0.49],      // 炮塔座圈（环带圆拟合 y1.57~1.79）
+    barrelPivot: [0, 1.93, 1.40],      // 炮盾耳轴（炮管轴线实测 y1.93）
+    muzzleLocal: [0, 1.93, 3.62],      // 炮口（Object_2 前端实测）
+    exhaustLocal: [[0.48, 1.03, -2.97], [-0.45, 1.04, -2.97]],   // md 排气烟点×2.56
+    trackLocal: [[-1.26, 0.1, 0], [1.26, 0.1, 0]],
+    trackScrollAxis: 'y',       // 履带 UV 纵向=V（vRange 跨 12.1 格）
+    trackScrollFlip: true,      // 底段 dv/dz<0：前进时 offset 须递减
+    // —— 实车性能 ——
+    mass: 27500,                // 战斗全重 ≈27.5t（1941 型）
+    engineHp: 500,              // V-2-34 柴油机
+    maxSpeedForward: 53 / 3.6,
+    maxSpeedReverse: 8 / 3.6,
+    maxSpeed: 53 / 3.6,         // 公路（史实）
+    offroadK: 0.55,             // 越野极速 ≈29km/h
+    revSpeed: 2.4,
+    enginePower: 3.7,           // 18.2hp/t（族内最优推重比）
+    powerFalloff: 0.56,
+    clutchDelay: 0.42,
+    engineBrake: 1.6,
+    brakeDecel: 6.5,
+    turnDrag: 0.42,
+    slopePower: 0.58,
+    hullTraverse: 0.45,
+    turretTraverse: 0.18,       // 双人炮塔手摇为主 ≈10°/s（史实短板）
+    gunDepression: -5.0,        // 苏系俯角短板
+    gunElevation: 28.0,
+    wheelsRotate: true,
+    gyroStab: false,
+    // —— 火力：76.2mm F-34 L/41（与 KV-1 同炮族弹道）——
+    gunCaliber: 76,
+    shellName: 'BR-350A APBC',
+    shellNameCn: '钝头穿甲弹',
+    shellVelocity: 662,
+    shellPen: 61,                // mm RHA @0m（30° 口径基准：史实30° 56@500/50@1000/45@1500/40@2000）
+    shellPenDrop: 0.17,
+    apcrShell: { name: 'BR-354P APCR', nameCn: '钨芯穿甲弹', velocity: 950, pen: 112, penDrop: 0.39 },  // 次口径钨芯弹（3 键；90@500/24@2000）
+    heShellName: 'OF-350',
+    heVelocity: 680,
+    loadout: { ap: 34, apcr: 3, he: 40 },   // 77 发编制（1941 型）
+    spallPower: 100,
+    reloadTime: 7.2,             // s 人工装填（双人炮塔局促，车长兼炮手）
+    dispersion: 0.00042,         // σ：F-34（苏炮公差大）
+    aimTime: 2.1,
+    // —— 装甲（mm RHA；1941 焊接炮塔 45mm 全向）——
+    armor: {
+      hullFront: 45,  hullSide: 45, hullRear: 45, hullTop: 20,
+      turretFront: 45, turretSide: 45, turretRear: 45,
+    },
+    // —— 装甲判定模型（板图 v2：车体板沿用 T-34 族，炮塔按 1941 焊接实测轮廓铺）——
+    armorModel: {
+      hull: {
+        box: { x0: -1.2, x1: 1.2, y0: 0.44, y1: 1.77, z0: -2.93, z1: 3.10 },
+        plates: [
+          { name: '首上(大倾角)', face: 'front', t: 45, pos: [0, 1.24, 2.31], size: [2.4, 1.88], rot: [-60, 0, 0] },
+          { name: '首下', face: 'front', t: 45, pos: [0, 0.61, 2.73], size: [2.4, 0.75], rot: [50, 0, 0] },
+          { name: '车尾', face: 'rear', t: 45, pos: [0, 1.13, -2.74], size: [2.4, 1.55], rot: [35, 0, 0] },
+          { name: '侧上', face: 'side', t: 45, pos: [1.2, 1.35, 0], size: [6.0, 0.9], rot: [0, 90, 0], mirror: true },
+          { name: '行走部', face: 'side', t: 20, pos: [1.23, 0.65, 0], size: [6.0, 0.8], rot: [0, 90, 0], mirror: true, track: true },
+          { name: '车顶', face: 'top', t: 20, pos: [0, 1.77, 0], size: [2.4, 6.0], rot: [-90, 0, 0] },
+        ],
+        extras: [],
+      },
+      turret: {
+        box: { x0: -0.90, x1: 0.90, y0: 1.47, y1: 2.36, z0: -0.65, z1: 1.62 },
+        plates: [
+          { name: '炮盾', face: 'front', t: 45, pos: [0, 1.90, 1.50], size: [1.0, 0.60], rot: [0, 0, 0] },
+          { name: '炮塔正面', face: 'front', t: 45, pos: [-0.58, 1.88, 1.22], size: [0.70, 0.75], rot: [0, -40, 0] },
+          { name: '炮塔正面', face: 'front', t: 45, pos: [0.58, 1.88, 1.22], size: [0.70, 0.75], rot: [0, 40, 0] },
+          { name: '炮塔尾部', face: 'rear', t: 45, pos: [0, 1.88, -0.58], size: [1.6, 0.80], rot: [0, 0, 0] },
+          { name: '炮塔侧面', face: 'side', t: 45, pos: [0.85, 1.88, 0.40], size: [2.0, 0.80], rot: [0, 90, 0], mirror: true },
+          { name: '炮塔顶', face: 'top', t: 16, pos: [0, 2.32, 0.45], size: [1.7, 2.0], rot: [-90, 0, 0] },
+        ],
+        extras: [],
+      },
+    },
+    mgCaliber: '7.62',
+    mg: { rate: 10, dispersion: 0.016, range: 550, ammoMax: 3000 },
+    hullMgArc: 0.26,
+    // —— 内部布局（史实 4 乘员：双人炮塔车长兼炮手；驾驶左前/通讯员右前）——
+    internal: {
+      crew: [
+        { id: 'commander', name: '车长',   x: -0.30, y: 1.90, z: 0.30,  r: 0.33 },
+        { id: 'loader',    name: '装填手', x: 0.40,  y: 1.90, z: 0.15,  r: 0.33 },
+        { id: 'driver',    name: '驾驶员', x: -0.45, y: 1.05, z: 1.60,  r: 0.33 },
+        { id: 'radio',     name: '通讯员', x: 0.45,  y: 1.05, z: 1.50,  r: 0.33 },
+      ],
+      modules: {
+        engine:      [{ x: 0,     y: 0.95, z: -1.90,  r: 0.55 }],
+        fuel:        [{ x: -0.85, y: 1.00, z: -0.70,  r: 0.42 }, { x: 0.85, y: 1.00, z: -0.70, r: 0.42 }],
+        ammoRacks:   [{ x: 0.60,  y: 1.10, z: 0.70,  r: 0.40 }, { x: -0.60, y: 1.10, z: 0.70, r: 0.40 },
+                      { x: 0,     y: 1.80, z: -0.40, r: 0.30 }],
+        breech:      [{ x: 0,     y: 1.93, z: 1.00,  r: 0.32 }],
+        turretDrive: [{ x: -0.25, y: 1.55, z: 0.30,  r: 0.32 }],
+        optics:      [{ x: -0.25, y: 1.98, z: 1.05,  r: 0.26 }],
+      },
+      ringY: 1.55,
+      trackX: 1.26, trackY: 1.00,
+    },
+    dims: { length: 5.92, width: 3.0, hullHeight: 1.75, turretTop: 2.36 },
+    trackWidth: 0.55,
+    ammo: { shell: 77, mg: 3000 },
+    sound: {
+      drive: 'tankSound/rus/t34-egAll.mp3',                // T-34 族同款 V-2 发动机
+      mg: 'sound/t90-gun.mp3',
+      fire: 'tankSound/rus/76mm-fire.mp3',                 // 第三人称开炮：76.2mm F-34
+      fireAim: 'tankSound/rus/76mm-inner.mp3',             // 瞄准镜开炮：76.2mm 炮膛内声
       seg: { mgLoopStart: 0.03, mgLoopEnd: 0.09, driveAccel: 4.9, driveCruiseEnd: 13.24, driveDecelStart: 13.8 },
     },
   },

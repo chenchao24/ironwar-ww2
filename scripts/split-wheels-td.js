@@ -177,6 +177,54 @@ const CFG = {
     discSpan: [0.45, 0.85],
     discMinAx: 0.8,
   },
+  // ── 2026-10-09 T-34 三连（85精英/57/41）：T-34 底盘轮系同 su100（5 负重轮/后主动/前诱导，无回转轮）──
+  // 实测（analyze-td）：负重轮×5/侧 y=0.45（span 0.84）；后主动轮 z=-2.61 y=0.59（span 0.62）、
+  // 前诱导轮 z=2.62 y=0.70（span 0.49）；轮毂盖/泥瓦弧碎件靠三道门剔除
+  t3485e: {
+    SRC: 'tankModel/t-34-85.glb', OUT: 'model/t3485e.glb',
+    // Object_20/25 各含前诱导轮+后主动轮合并；Object_24/30 混入塔顶/后翼子板散件（靠归桶剔除留车体）
+    wheelNodes: ['Object_17', 'Object_20', 'Object_21', 'Object_22', 'Object_23', 'Object_24',
+                 'Object_25', 'Object_26', 'Object_27', 'Object_28', 'Object_29', 'Object_30'],
+    mode: 'bucket',
+    driveFront: false,
+    discSpan: [0.4, 0.9],
+    rollerSpan: [0.15, 0.45],
+    rollerMinAx: 1.1, rollerY: [0.6, 1.3],
+    rollerMinComponents: 1,
+    rollerMinDist: 0.30,
+    // Object_13 双 DT 合并件（同 kv1 族）：下簇 y<1.6 车体机枪 → hullMgDt（F 发射）；上簇同轴留原节点
+    mgSplit: { node: 'Object_13', newName: 'hullMgDt', test: (c) => c[1] < 1.6 },
+  },
+  t3457: {
+    SRC: 'tankModel/t-34-57_1943.glb', OUT: 'model/t3457.glb',
+    wheelNodes: ['Object_11', 'Object_14'],
+    mode: 'bucket',
+    driveFront: false,
+    discSpan: [0.4, 0.9],
+    rollerSpan: [0.15, 0.45],
+    rollerMinAx: 1.1, rollerY: [0.6, 1.3],
+    rollerMinComponents: 1,
+    rollerMinDist: 0.30,
+    // Object_10 双 DT 合并件：下簇 y<1.6 → hullMgDt
+    mgSplit: { node: 'Object_10', newName: 'hullMgDt', test: (c) => c[1] < 1.6 },
+  },
+  t3441: {
+    SRC: 'tankModel/t-34_1941.glb', OUT: 'model/t3441.glb',
+    // Object_7 全轮系+前翼子板/首上杂件合并（杂件非圆不成种子、归桶退回车体）
+    // radialCap 1.05（本车轮间有悬挂短杆连通分量伸到 r0.44>1.35 帽内会被误收；
+    // 轮缘真顶点 r≤0.417，1.05 帽既保轮缘又把 0.44 短杆退回车体静态）
+    radialCap: 1.05,
+    wheelNodes: ['Object_7'],
+    mode: 'bucket',
+    driveFront: false,
+    discSpan: [0.4, 0.9],
+    rollerSpan: [0.15, 0.45],
+    rollerMinAx: 1.1, rollerY: [0.6, 1.3],
+    rollerMinComponents: 1,
+    rollerMinDist: 0.30,
+    // Object_11 双 DT 合并件（1941 炮塔矮，上簇 y1.65 起）：下簇 y<1.5 → hullMgDt
+    mgSplit: { node: 'Object_11', newName: 'hullMgDt', test: (c) => c[1] < 1.5 },
+  },
   m36: {
     SRC: 'tankModel/m36_gmc.glb', OUT: 'model/m36_gmc.glb',
     wheelNodes: ['Object_14', 'Object_17', 'Object_18'],
@@ -331,7 +379,7 @@ function worldMat(node) {
         if (d < lim && d < bestD) { bestD = d; best = s; }
       }
       if (!best) continue;
-      const cap = best.r * 1.35;
+      const cap = best.r * (CFG.radialCap || 1.35);
       let ok = true;
       for (const i of cp.idxs) for (const p of allTris[i].wv) {
         if (Math.hypot(p[2] - best.z, p[1] - best.y) > cap) { ok = false; break; }
@@ -415,7 +463,7 @@ function worldMat(node) {
         if (d < lim && d < bestD) { bestD = d; best = s; }
       }
       if (!best) continue;
-      const cap = best.r * 1.35;
+      const cap = best.r * (CFG.radialCap || 1.35);
       let ok = true;
       for (const i of cp.idxs) for (const p of allTris[i].wv) {
         if (Math.hypot(p[2] - best.z, p[1] - best.y) > cap) { ok = false; break; }
@@ -471,7 +519,7 @@ function worldMat(node) {
         if (d < 0.08 && d < bestD) { bestD = d; best = s; }
       }
       if (!best) continue;
-      const cap = best.r * 1.35;
+      const cap = best.r * (CFG.radialCap || 1.35);
       let ok = true;
       for (const i of cp.idxs) for (const p of allTris[i].wv) {
         if (Math.hypot(p[2] - best.z, p[1] - best.y) > cap) { ok = false; break; }

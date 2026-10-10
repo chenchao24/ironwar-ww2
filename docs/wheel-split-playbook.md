@@ -240,7 +240,9 @@ hullMgArc: 0.26,           // 前机枪射界 ±15°
 
 > 虎王 → 费迪南/猎豹 → M26 之后，新车批量接入不再逐车复制脚本，统一为
 > **`node scripts/split-wheels-td.js <车型>`**（CFG 表驱动）。当前覆盖：
-> m18 / m36 / pz4g / pz4j / kv1 / is1 / is2m / su100 / isu152 / su152。
+> m18 / m36 / pz4g / pz4j / kv1 / is1 / is2m / su100 / isu152 / su152
+> / jumbo / thunderbolt / firefly（2026-10-09 M4 三连）
+> / t3485e / t3457 / t3441（2026-10-09 T-34 三连，T-34 底盘参数与 su100 同款）。
 > 结构分析用 `scripts/analyze-td.js`（参数化：`node analyze-td.js <glb> <轮件节点csv> [机枪节点]`）。
 
 ### 13.1 CFG 参数表（每车实测填入）
@@ -260,6 +262,7 @@ hullMgArc: 0.26,           // 前机枪射界 ±15°
 | `discYMax` | 满盘种子中心 y 上限 | 默认 1.1；**四号 G 翼子板上有竖放备用负重轮（y1.45 成盘形）→ 靠此排除留车体** |
 | `discMinAx` | 满盘种子 \|质心x\| 下限 | 2026-10-09 新增，默认 0；M4 三连：车体中线扁平件（牵引钩座）误种为轮 → 0.8 |
 | `discRoundTol` | 满盘种子 spanY≈spanZ 圆度容差 | 2026-10-09 新增，默认 ∞；E8 HVSS 平衡肘枢轴座不圆（0.60 vs 0.45）误种 → 0.06 |
+| `radialCap` | 归桶逐顶点半径帽系数（×种子 r） | 2026-10-09 新增，默认 1.35；t3441 轮间悬挂短杆伸到 r0.44（>轮缘 0.417）误收 → 1.05 退回车体静态 |
 | `barrelSplit`/`roofMgSplit`/`jerrySplit`/`mgSplit` | 非轮拆分（见 13.3） | 元件级质心 test 函数切分 |
 
 ### 13.2 碎件剔除规则（三道门 + 筋件豁免）
