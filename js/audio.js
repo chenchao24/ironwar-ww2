@@ -22,7 +22,7 @@ class AudioManager {
     this.ambientGain = null;
     this.engineNodes = null;
     this.started = false;
-    this.settings = { master: 0.8, sfx: 0.9, ambient: 0.6, bgmOn: true, bgmVol: 50, bgmMode: 'normal' };
+    this.settings = { master: 0.8, sfx: 0.9, ambient: 0.6, bgmOn: true, bgmVol: 30, bgmMode: 'normal' };
     this.ext = null;          // 外部音效缓冲 { engine, mg, fire, fireAim, seg, _key }
     this.extEngine = null;    // 外部引擎运行节点 { loopSrc, loopG, startSrc }
     this._xloops = [];        // 无缝循环链（新式引擎怠速/巡航）：双拷贝交叉淡化消循环接缝
@@ -72,7 +72,7 @@ class AudioManager {
   _applyBgmVolume() {
     if (!this.bgmEl) return;
     const on = this.settings.bgmOn !== false;
-    const vol = on ? (this.settings.master || 0) * ((this.settings.bgmVol ?? 50) / 100) : 0;
+    const vol = on ? (this.settings.master || 0) * ((this.settings.bgmVol ?? 30) / 100) : 0;
     this.bgmEl.volume = Math.min(1, Math.max(0, vol));
   }
 

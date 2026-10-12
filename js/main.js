@@ -539,7 +539,7 @@ class Game {
   _audioSettings() {
     const s = this.ui.settings;
     return { master: s.master / 100, sfx: s.sfx / 100, ambient: s.ambient / 100,
-      bgmOn: s.bgmOn !== false, bgmVol: s.bgmVol ?? 50, bgmMode: s.bgmMode || 'normal' };
+      bgmOn: s.bgmOn !== false, bgmVol: s.bgmVol ?? 30, bgmMode: s.bgmMode || 'normal' };
   }
 
   // ─────────── 战斗流程（猎杀模式 1vN） ───────────

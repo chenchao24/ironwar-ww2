@@ -151,7 +151,7 @@ export class UI {
 
   // ─────────── 设置 ───────────
   _loadSettings() {
-    const def = { master: 80, sfx: 90, ambient: 60, quality: 'high', bgmOn: true, bgmVol: 50,
+    const def = { master: 80, sfx: 90, ambient: 60, quality: 'high', bgmOn: true, bgmVol: 30,
       bgmMode: 'normal', difficulty: 'standard', enemyCount: 1, factionLock: true, mapId: 'kursk' };
     let s;
     try {
@@ -454,7 +454,7 @@ export class UI {
       tog.classList.toggle('on', this.settings.bgmOn);
       tog.textContent = this.settings.bgmOn ? '开' : '关';
     };
-    $('set-bgm').value = this.settings.bgmVol ?? 50; $('val-bgm').textContent = this.settings.bgmVol ?? 50;
+    $('set-bgm').value = this.settings.bgmVol ?? 30; $('val-bgm').textContent = this.settings.bgmVol ?? 30;
     $('set-bgm-personal').checked = this.settings.bgmMode === 'personal';
     for (const k of ['master', 'sfx', 'ambient', 'bgm']) {
       $(`set-${k}`).oninput = (e) => { $(`val-${k}`).textContent = e.target.value; };
