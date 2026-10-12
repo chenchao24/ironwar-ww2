@@ -493,6 +493,8 @@ class Game {
       onRetry: () => { audio.playUIClick(); this._startBattle(); },
       onPauseResume: () => { audio.playUIClick(); this._resume(); },
       onPauseMenu: () => { audio.playUIClick(); this.paused = false; this._endToMenu(); },
+      onHelpOpen: () => { audio.playUIClick(); this._openHelp(); },
+      onHelpClose: () => { audio.playUIClick(); this._closeHelp(); },
       onSettingsChanged: () => {
         audio.applySettings(this._audioSettings());
         this._applyQuality();
@@ -505,6 +507,10 @@ class Game {
       if (this.state === 'battle' && code === 'Digit3') this._switchShellByCode('apcr');
       if (this.state === 'battle' && code === 'KeyR') this._toggleRepair();
       if (this.state === 'battle' && code === 'KeyT') this._useExtinguisher();
+      if (code === 'Escape' && this.ui.helpOpen) { this._closeHelp(); return; }
+      if (this.state === 'battle' && code === 'KeyH') {
+        if (this.ui.helpOpen) this._closeHelp(); else this._openHelp();
+      }
       if (this.state === 'battle' && code === 'Escape') {
         if (this.paused) this._resume(); else this._pause();
       }
@@ -1013,7 +1019,21 @@ class Game {
   _resume() {
     this.paused = false;
     audio.resumeBGM();
+    if (this.player && !this.player.destroyed) audio.startEngine();   // 暂停 stopEngine 拆图，恢复时重建（击毁车已由 killEngine 占位不再启动）
     this.ui.show('hud');
+  }
+
+  // ── 操作说明弹窗（战斗中打开自动暂停；从暂停屏打开则关闭后回暂停屏） ──
+  _openHelp() {
+    if (this.ui.helpOpen) return;
+    this._helpResume = this.state === 'battle' && !this.paused;   // 战斗中未暂停打开 → 关窗后恢复战斗
+    if (this._helpResume) this._pause();
+    this.ui.showHelp();
+  }
+  _closeHelp() {
+    if (!this.ui.helpOpen) return;
+    this.ui.hideHelp();
+    if (this._helpResume) { this._helpResume = false; this._resume(); }
   }
 
   // ─────────── 玩家操控（WT 式手感） ───────────

@@ -12,7 +12,7 @@ export const GAME = {
 export const CAMERA = {
   fov: 62,
   aimFov: 32,               // 开镜基础 FOV（各车固定倍率由 zoomFov 覆盖）
-  chaseDist: 10, chaseMin: 5.5, chaseMax: 22,
+  chaseDist: 10, chaseMin: 5.5, chaseMax: 10,
   chaseHeight: 2.6,
   followLerp: 9,
   aimLerp: 14,
@@ -4531,5 +4531,10 @@ export const BGM = {
     'bgm/kersk.mp3',
   ],
   gap: 10,
-  nations: {},                // 二战国别曲后续加入（个性化模式并入战斗曲库一起洗牌）
+  nations: {                  // 国别战斗曲（声音设置勾选「个性化音乐」后只播国别曲；该国无曲回退标准曲库）
+    us: ['bgm/us1.mp3'],
+    de: ['bgm/ge1.mp3'],
+    uk: ['bgm/en1.mp3', 'bgm/en2.mp3'],
+    ru: ['bgm/rus1.mp3', 'bgm/rus2.mp3', 'bgm/rus3.mp3'],
+  },
 };

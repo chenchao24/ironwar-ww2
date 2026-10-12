@@ -64,12 +64,6 @@
         <option value="high" selected>高</option>
       </select>
     </div>
-    <div class="setting-row"><label>战斗音乐</label>
-      <select id="set-bgm-mode">
-        <option value="normal">标准模式</option>
-        <option value="personal">个性化（按坦克国别）</option>
-      </select>
-    </div>
     <div class="modal-actions"><button class="menu-btn small" id="btn-game-close">保 存 返 回</button></div>
   </div>
 </div>
@@ -85,7 +79,35 @@
       <button type="button" id="set-bgm-toggle" class="bgm-toggle">开</button>
       <input type="range" id="set-bgm" min="0" max="100" value="50"><span class="set-val" id="val-bgm">50</span>
     </div>
+    <div class="setting-row"><label>个性选曲</label>
+      <input type="checkbox" id="set-bgm-personal"><span class="set-hint">按坦克国别播放</span>
+    </div>
     <div class="modal-actions"><button class="menu-btn small" id="btn-audio-close">保 存 返 回</button></div>
+  </div>
+</div>
+
+<!-- ══════════ 操作说明 ══════════ -->
+<div id="modal-help" class="modal">
+  <div class="modal-box help-box">
+    <div class="modal-title">操 作 说 明</div>
+    <table id="help-table">
+      <tr><td>W / S</td><td>前进 / 倒车（油门平滑 · 惯性滑行）</td></tr>
+      <tr><td>A / D</td><td>车体转向</td></tr>
+      <tr><td>鼠标</td><td>炮塔瞄准（炮塔以自身转速追踪准星）</td></tr>
+      <tr><td>左键</td><td>主炮开火</td></tr>
+      <tr><td>右键</td><td>按住开瞄准镜；双档瞄具按 <b>Shift</b> 变倍</td></tr>
+      <tr><td>1 / 2 / 3</td><td>切换弹种（AP / HE / APCR 钨芯弹）</td></tr>
+      <tr><td>中键（按住）</td><td>同轴 / 车顶机枪连发</td></tr>
+      <tr><td>F（按住）</td><td>车体前机枪（射界内自动瞄准点亮目标）</td></tr>
+      <tr><td>Q</td><td>车长望远镜（Shift 切 7×/12×；观察不联动炮塔、禁火）</td></tr>
+      <tr><td>R / T</td><td>维修包 / 灭火器（每场各 1 次）</td></tr>
+      <tr><td>空格</td><td>制动刹车</td></tr>
+      <tr><td>C</td><td>自由观赏视角，再按返回</td></tr>
+      <tr><td>H</td><td>打开 / 关闭本说明</td></tr>
+      <tr><td>Esc</td><td>暂停 / 释放鼠标</td></tr>
+    </table>
+    <div class="help-tips">提示：600m 外目标需望远镜 / 瞄准镜持续照射约 2 秒确认点亮；歼击车无炮塔，需转向车体把目标带进射界（炮口指示器红脉动 = 未在射界）。</div>
+    <div class="modal-actions"><button class="menu-btn small" id="btn-help-close">返 回</button></div>
   </div>
 </div>
 
@@ -257,6 +279,7 @@
 
   <!-- 小地图 -->
   <canvas id="minimap"></canvas>
+  <div id="help-hint">按 H 查看操作说明</div>
 
   <!-- 弹药面板（左侧极简：字母+数字；AP/HE 点击切弹，ui.js 动态生成） -->
   <div id="ammo-panel"></div>
@@ -339,6 +362,7 @@
     <div id="pause-title">暂 停</div>
     <div class="select-actions">
       <button class="menu-btn primary" id="btn-pause-resume">返回游戏</button>
+      <button class="menu-btn small" id="btn-pause-help">操作说明</button>
       <button class="menu-btn small" id="btn-pause-menu">退回首页</button>
     </div>
   </div>

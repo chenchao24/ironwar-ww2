@@ -232,6 +232,11 @@ export class UI {
     if (name === 'hud') this.screens.hud.classList.add('active');
   }
 
+  // 操作说明弹窗
+  get helpOpen() { return $('modal-help').classList.contains('active'); }
+  showHelp() { $('modal-help').classList.add('active'); }
+  hideHelp() { $('modal-help').classList.remove('active'); }
+
   bind(handlers) {
     $('screen-cover').addEventListener('click', () => handlers.onCoverClick());
     $('btn-hunt-mode').addEventListener('click', () => handlers.onHuntMode());
@@ -265,6 +270,9 @@ export class UI {
     $('btn-result-retry').addEventListener('click', () => handlers.onRetry());
     $('btn-pause-resume').addEventListener('click', () => handlers.onPauseResume && handlers.onPauseResume());
     $('btn-pause-menu').addEventListener('click', () => handlers.onPauseMenu && handlers.onPauseMenu());
+    // 操作说明（暂停菜单按钮 / 关闭；HUD 侧为 H 键文字提示，无按钮）
+    $('btn-pause-help').addEventListener('click', () => handlers.onHelpOpen && handlers.onHelpOpen());
+    $('btn-help-close').addEventListener('click', () => handlers.onHelpClose && handlers.onHelpClose());
 
     // 机库坦克下拉选择器（阵营/国家 → 坦克 两级；车库车辆增多后的直选入口）
     this._tankSelHandlers = handlers;
@@ -428,12 +436,10 @@ export class UI {
   _syncGameUI() {
     $('set-difficulty').value = this.settings.difficulty || 'standard';
     $('set-quality').value = this.settings.quality;
-    $('set-bgm-mode').value = this.settings.bgmMode || 'normal';
   }
   _readGameUI() {
     this.settings.difficulty = $('set-difficulty').value;
     this.settings.quality = $('set-quality').value;
-    this.settings.bgmMode = $('set-bgm-mode').value;
   }
   // ── 声音设置弹窗 ──
   _syncAudioUI() {
@@ -449,6 +455,7 @@ export class UI {
       tog.textContent = this.settings.bgmOn ? '开' : '关';
     };
     $('set-bgm').value = this.settings.bgmVol ?? 50; $('val-bgm').textContent = this.settings.bgmVol ?? 50;
+    $('set-bgm-personal').checked = this.settings.bgmMode === 'personal';
     for (const k of ['master', 'sfx', 'ambient', 'bgm']) {
       $(`set-${k}`).oninput = (e) => { $(`val-${k}`).textContent = e.target.value; };
     }
@@ -458,6 +465,7 @@ export class UI {
     this.settings.sfx = +$('set-sfx').value;
     this.settings.ambient = +$('set-ambient').value;
     this.settings.bgmVol = +$('set-bgm').value;
+    this.settings.bgmMode = $('set-bgm-personal').checked ? 'personal' : 'normal';
   }
 
   setLoadProgress(f) { $('load-fill').style.width = `${Math.round(f * 100)}%`; }

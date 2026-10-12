@@ -47,6 +47,18 @@ export class Input {
       if (this.locked) this.wheel += Math.sign(e.deltaY);
     }, { passive: true });
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // ── 屏蔽浏览器前进/后退（测试中误触退出页面的四类来源全堵） ──
+    // ① 鼠标侧键（button 3=后退 / 4=前进）② Alt+←/→ ③ 右键/触控板手势 → 历史导航由 popstate 兜底顶回
+    for (const ev of ['mousedown', 'mouseup', 'auxclick']) {
+      window.addEventListener(ev, (e) => { if (e.button === 3 || e.button === 4) e.preventDefault(); }, true);
+    }
+    window.addEventListener('keydown', (e) => {
+      if (e.altKey && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) e.preventDefault();
+    });
+    window.addEventListener('contextmenu', (e) => e.preventDefault());   // 右键=开镜，全局禁菜单（含手势插件触发源）
+    history.pushState(null, '', location.href);   // 压栈占位：任何来源的后退都只会 pop 掉这层
+    window.addEventListener('popstate', () => { history.pushState(null, '', location.href); });
   }
 
   requestLock() {

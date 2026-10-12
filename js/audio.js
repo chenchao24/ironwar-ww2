@@ -105,12 +105,12 @@ class AudioManager {
     this._playBgmTrack(BGM.menu, { loop: true });
   }
 
-  // 战斗 BGM：曲库洗牌随机轮播（BGM.battle 数组）；个性化模式 = 国别曲并入曲库
+  // 战斗 BGM：标准模式 = 战斗曲库洗牌；个性化模式 = 仅本车国别曲洗牌（该国无曲回退标准曲库）
   startBattleBGM(tankCfg) {
     if (!this.started) return;
     const personal = this.settings.bgmMode === 'personal';
     const nationTracks = (personal && tankCfg && BGM.nations[tankCfg.nation]) || [];
-    this.bgmList = this._shuffle([...nationTracks, ...BGM.battle]);
+    this.bgmList = this._shuffle(personal && nationTracks.length ? [...nationTracks] : [...BGM.battle]);
     this.bgmIdx = 0;
     this._playBattleNext();
   }

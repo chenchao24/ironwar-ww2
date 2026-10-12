@@ -342,9 +342,10 @@ export class Tank {
     // 负重轮（独立网格才建枢轴旋转；单一整体网格不能转）
     this.wheelGroups = [];
     if (cfg.wheelsRotate !== false) {
+      this.model.updateMatrixWorld(true);
       for (const m of findMeshes(cfg.parts.wheels)) {
         const box = new THREE.Box3().setFromObject(m);
-        const center = box.getCenter(new THREE.Vector3());
+        const center = this.model.worldToLocal(box.getCenter(new THREE.Vector3()));   // 世界系→模型系：modelYOffset 抬高时免双重计入（枢轴偏心修复）
         const g = new THREE.Group();
         g.position.copy(center);
         this.model.add(g);
