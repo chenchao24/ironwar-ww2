@@ -354,6 +354,7 @@ class Game {
       }
       this.ui.showHangarLoading(false);
       this._hangarBusy = false;
+      this._pageFadeOut();
       this._startPrewarm();
     };
     step();
@@ -427,6 +428,7 @@ class Game {
     this._setupMenuShowcase();
     this.ui.refreshHangar(this.ui.selectedTank, TANKS[this.ui.selectedTank]);
     this._initHangarControls();
+    this._pageFadeOut();
     this._startPrewarm();
   }
 
@@ -531,9 +533,9 @@ class Game {
     document.getElementById('screen-bail').classList.add('active');
   }
 
+  // 根路径 index.html 已成为正式登录入口：game.html 加载完成直达车库，不再经过旧封面/主菜单
   _toCover() {
-    this.state = 'cover';
-    this.ui.show('cover');
+    this._enterHangarWithLoading();
   }
 
   _audioSettings() {
@@ -987,20 +989,16 @@ class Game {
     `);
   }
 
+  // 车库/结算/暂停的“返回主菜单”统一回到 index.html 登录入口（先黑场再切换）
   _endToMenu() {
-    if (this.garage) this.garage.hide();
-    this.renderer.shadowMap.autoUpdate = true;
-    this._applyQuality();
-    if (this.world) {
-      this.world.root.visible = true;
-      this.renderer.toneMappingExposure = (this.world.map.exposure != null) ? this.world.map.exposure : 1.28;
-    }
-    this._clearBattle();
-    this._setupMenuShowcase();
-    this.input.aiming = false;
-    this.state = 'menu';
-    this.ui.show('menu');
-    audio.startMenuBGM();
+    const f = document.getElementById('page-fade');
+    if (f) f.classList.add('show');
+    setTimeout(() => { location.href = 'index.html'; }, 650);
+  }
+
+  _pageFadeOut() {
+    const f = document.getElementById('page-fade');
+    if (f) f.classList.remove('show');
   }
 
   _pause() {

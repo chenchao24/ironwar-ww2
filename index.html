@@ -3,50 +3,180 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>钢铁战线3 铁甲猎手 IRON WAR III — 坦克对战</title>
+<title>钢铁战线3 · 铁甲猎手 — 游戏首页</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="css/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500;700;900&family=Noto+Serif+SC:wght@700;900&family=Allerta+Stencil&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#d3aa5f; --gold-dim:#9a7c44; --ivory:#efe6d2; --ink:#0b0906;
+    --olive:#8a8a6a;
+  }
+  html,body{margin:0;height:100%;background:var(--ink);overflow:hidden;
+    font-family:'Noto Sans SC',system-ui,sans-serif; color:var(--ivory);}
+  canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;}
+
+  /* ---------- 全局叠加：暗角 / 颗粒 / 左侧压暗 ---------- */
+  .vig{position:fixed;inset:0;pointer-events:none;z-index:5;
+    background:radial-gradient(120% 90% at 62% 42%, transparent 55%, rgba(5,4,2,.55) 100%);}
+  .shade{position:fixed;inset:0;pointer-events:none;z-index:4;
+    background:linear-gradient(90deg, rgba(8,6,3,.52) 0%, rgba(8,6,3,.18) 34%, transparent 55%);}
+  #grain{position:fixed;inset:-64px;pointer-events:none;z-index:6;opacity:.055;
+    background-repeat:repeat;animation:grain .9s steps(4) infinite;}
+  @keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-22px,14px)}
+    50%{transform:translate(14px,-20px)}75%{transform:translate(-10px,-8px)}100%{transform:translate(18px,10px)}}
+
+  /* ---------- 标题区 ---------- */
+  .ui{position:fixed;inset:0;z-index:10;pointer-events:none;}
+  .titleblock{position:absolute;left:6.5vw;top:50%;transform:translateY(-56%);}
+  .kicker{font-size:clamp(11px,1.15vw,15px);letter-spacing:.55em;color:var(--gold);
+    opacity:0;margin-bottom:1.4vh;font-weight:500;text-shadow:0 1px 14px rgba(10,7,3,.8);}
+  h1{margin:0;font-family:'Noto Serif SC',serif;font-weight:900;
+    font-size:clamp(54px,9.4vw,148px);line-height:1.02;letter-spacing:.06em;
+    color:var(--ivory);text-shadow:0 2px 30px rgba(0,0,0,.55);}
+  h1 span{display:inline-block;opacity:0;transform:translateY(.45em);filter:blur(10px);}
+  h1 .num{margin-left:.03em;}
+  .entitle{font-family:'Allerta Stencil','Noto Sans SC',sans-serif;
+    font-size:clamp(13px,1.5vw,21px);letter-spacing:.62em;color:var(--gold);
+    margin-top:1.6vh;opacity:0;text-shadow:0 1px 16px rgba(10,7,3,.75);}
+  .rule{width:min(30vw,380px);height:1px;margin:2.6vh 0 3vh;
+    background:linear-gradient(90deg,var(--gold),transparent);opacity:0;transform-origin:left;}
+
+  /* ---------- 菜单 ---------- */
+  nav.menu{display:flex;flex-direction:column;gap:.6vh;width:max-content;}
+  nav.menu button{
+    pointer-events:auto;appearance:none;background:none;border:0;cursor:pointer;
+    display:flex;align-items:center;gap:14px;text-align:left;
+    color:var(--ivory);font-family:inherit;font-weight:700;
+    font-size:clamp(19px,2.1vw,30px);letter-spacing:.28em;text-indent:.1em;
+    text-shadow:0 1px 14px rgba(10,7,3,.65);
+    padding:1.05vh 18px 1.05vh 10px;position:relative;
+    opacity:0;transform:translateX(-14px);
+    transition:color .18s, background .18s, letter-spacing .25s;}
+  nav.menu button .bar{width:4px;height:1.2em;background:var(--gold-dim);
+    transition:height .18s, background .18s;flex:none;}
+  nav.menu button .tag{font-size:.55em;letter-spacing:.3em;color:var(--gold-dim);
+    font-weight:500;opacity:0;transform:translateX(-6px);transition:.18s;}
+  nav.menu button:hover, nav.menu button:focus-visible{
+    color:#fff;outline:none;background:linear-gradient(90deg,rgba(211,170,95,.14),transparent 75%);}
+  nav.menu button:hover .bar, nav.menu button:focus-visible .bar{background:var(--gold);height:1.5em;}
+  nav.menu button:hover .tag{opacity:1;transform:none;}
+  nav.menu button.primary{color:var(--gold);}
+  nav.menu button.primary:hover{color:#ffd98f;}
+  nav.menu button.disabled{color:rgba(239,230,210,.35);}
+  nav.menu button.disabled .bar{background:rgba(154,124,68,.3);}
+  nav.menu button.disabled:hover{color:rgba(239,230,210,.55);background:rgba(211,170,95,.05);}
+  nav.menu button.disabled:hover .bar{background:var(--gold-dim);height:1.2em;}
+
+  /* ---------- 角落信息 ---------- */
+  .corner{position:absolute;font-size:clamp(10px,.95vw,13px);letter-spacing:.28em;
+    color:rgba(239,230,210,.5);line-height:2;text-shadow:0 1px 10px rgba(10,7,3,.7);}
+  .bl{left:6.5vw;bottom:4.5vh;opacity:0;}
+  .br{right:5vw;bottom:4.5vh;text-align:right;opacity:0;}
+  .tr{right:5vw;top:4.5vh;display:flex;gap:10px;align-items:center;opacity:0;}
+  .tl{left:6.5vw;top:4.5vh;opacity:0;}
+  #sndBtn{pointer-events:auto;appearance:none;background:none;cursor:pointer;border:1px solid rgba(211,170,95,.4);
+    color:var(--gold);font:inherit;font-size:.85em;letter-spacing:.3em;padding:.5em 1.1em .5em 1.35em;
+    transition:.2s;}
+  #sndBtn:hover{border-color:var(--gold);background:rgba(211,170,95,.12);}
+  #sndBtn.on{background:rgba(211,170,95,.85);color:#141009;border-color:transparent;}
+  /* 点赞 + 访问量（音效按钮正下方 10px；like 用低饱和红） */
+  .home-stats{position:absolute;right:0;top:calc(100% + 10px);display:flex;align-items:center;gap:16px;white-space:nowrap;}
+  .home-stat{display:inline-flex;align-items:center;gap:6px;font-size:1em;letter-spacing:.14em;}
+  .home-stat svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+  .home-stats .num{font-variant-numeric:tabular-nums;}
+  .home-like{appearance:none;background:none;border:0;cursor:pointer;color:#b36a6a;font:inherit;padding:0;transition:color .2s;pointer-events:auto;}
+  .home-like:hover{color:#cf8b8b;}
+  .home-like.on{color:#d28a8a;}
+  .home-like:disabled{opacity:.45;cursor:default;}
+  .home-views{color:rgba(239,230,210,.5);}
+
+  /* ---------- Toast ---------- */
+  #toast{position:absolute;left:50%;bottom:9vh;transform:translate(-50%,20px);
+    background:rgba(12,9,5,.82);border:1px solid rgba(211,170,95,.45);border-left:3px solid var(--gold);
+    padding:12px 26px;font-size:14px;letter-spacing:.18em;color:var(--ivory);
+    opacity:0;transition:.3s;pointer-events:none;backdrop-filter:blur(4px);}
+  #toast.show{opacity:1;transform:translate(-50%,0);}
+
+  /* ---------- 加载页 ---------- */
+  #loader{position:fixed;inset:0;background:var(--ink);z-index:30;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+    transition:opacity .9s;}
+  #loader.hide{opacity:0;pointer-events:none;}
+  #loader .ltitle{font-family:'Noto Serif SC',serif;font-weight:900;font-size:30px;
+    letter-spacing:.5em;text-indent:.5em;color:var(--ivory);}
+  #loader .lbar{width:min(300px,50vw);height:2px;background:rgba(211,170,95,.18);overflow:hidden;}
+  #loader .lbar i{display:block;height:100%;width:0%;background:var(--gold);transition:width .25s;}
+  #loader .lstep{font-size:12px;letter-spacing:.4em;color:rgba(239,230,210,.45);}
+
+  /* 入场动画（由 JS 添加 .in 触发） */
+  .kicker.in,.entitle.in,.rule.in,.bl.in,.br.in,.tr.in,.tl.in{opacity:1;transition:opacity 1.2s ease .1s;}
+  .rule.in{transform:scaleX(1);transition:transform 1.1s cubic-bezier(.2,.7,.2,1) .1s, opacity .6s;}
+  h1 span.in{opacity:1;transform:none;filter:none;transition:all .9s cubic-bezier(.2,.8,.25,1);}
+  nav.menu button.in{opacity:1;transform:none;transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.25,1),
+    color .18s,background .18s,letter-spacing .25s;}
+
+  .page-fade{position:fixed;inset:0;background:var(--ink);z-index:45;opacity:0;pointer-events:none;transition:opacity .75s ease;}
+  .page-fade.show{opacity:1;}
+  #err{position:fixed;inset:0;z-index:40;display:none;place-items:center;background:var(--ink);
+    color:var(--ivory);font-size:14px;letter-spacing:.2em;text-align:center;padding:0 10vw;line-height:2;}
+</style>
+<script>
+  // 捕获 three.js 的 shader 编译报错，便于调试（?debug 时读取 window.__clog）
+  window.__clog = [];
+  const _cerr = console.error.bind(console);
+  console.error = (...a) => { window.__clog.push(a.map(x => String(x?.message ?? x).slice(0, 600)).join(' ')); _cerr(...a); };
+</script>
 <script type="importmap">
-{
-  "imports": {
+{ "imports": {
     "three": "./vendor/three/build/three.module.js",
     "three/addons/": "./vendor/three/examples/jsm/"
-  }
-}
+} }
 </script>
 </head>
 <body>
-<canvas id="game-canvas"></canvas>
+<canvas id="c"></canvas>
+<div class="shade"></div>
+<div class="vig"></div>
+<div id="grain"></div>
 
-<!-- ══════════ 封面 ══════════ -->
-<div id="screen-cover" class="screen active">
-  <div class="cover-bg"></div>
-  <div class="cover-content">
-    <div class="game-logo">
-      <div class="logo-main">钢铁战线3</div>
-      <div class="logo-sub-cn">铁甲猎手</div>
-      <div class="logo-sub">IRON&nbsp;WAR&nbsp;III&nbsp;:&nbsp;IRON&nbsp;HUNTER</div>
-    </div>
-    <div class="cover-hint blink">点 击 任 意 处 进 入</div>
-  </div>
-</div>
-
-<!-- ══════════ 主菜单 ══════════ -->
-<div id="screen-menu" class="screen">
-  <div class="menu-left">
-    <div class="menu-logo">钢铁战线3<span>铁甲猎手 · IRON WAR III</span></div>
-    <div class="menu-items">
-      <button class="menu-btn" id="btn-hunt-mode">猎杀模式<span class="btn-note">自由猎杀 · 1v1~1v5</span></button>
-      <button class="menu-btn disabled" id="btn-survival" disabled>生存模式<span class="btn-note">暂未开放</span></button>
-      <button class="menu-btn disabled" id="btn-campaign" disabled>战役模式<span class="btn-note">暂未开放</span></button>
-      <button class="menu-btn" id="btn-settings-game">游戏设置<span class="btn-note">难度 · 画质</span></button>
-      <button class="menu-btn" id="btn-settings-audio">声音设置<span class="btn-note">音效 · 音乐</span></button>
+<div class="ui">
+  <div class="corner tl">钢 铁 战 线 3 &nbsp;·&nbsp; 铁 甲 猎 手</div>
+  <div class="corner tr">
+    <button id="sndBtn" title="环境音">♪ 音效 关</button>
+    <div class="home-stats" id="homeStats">
+      <button class="home-stat home-like" type="button" data-stat="like" aria-label="点赞">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.4S3.6 15 3.6 9.3A4.6 4.6 0 0 1 12 6.4a4.6 4.6 0 0 1 8.4 2.9c0 5.7-8.4 11.1-8.4 11.1Z"/></svg>
+        <span class="num" data-num="like">—</span>
+      </button>
+      <div class="home-stat home-views" aria-label="访问量">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.6 12S6.1 5.6 12 5.6 21.4 12 21.4 12 17.9 18.4 12 18.4 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+        <span class="num" data-num="view">—</span>
+      </div>
     </div>
   </div>
-  <div class="menu-footer">IRON WAR III v0.1 · 首次迭代 · WebGL2</div>
+
+  <div class="titleblock">
+    <h1><span>钢</span><span>铁</span><span>战</span><span>线</span><span class="num">3</span></h1>
+    <div class="entitle">IRON&nbsp;WAR&nbsp;III&nbsp;:&nbsp;IRON&nbsp;HUNTER</div>
+    <div class="rule"></div>
+    <nav class="menu">
+      <button class="primary" data-act="hunt"><i class="bar"></i>猎杀模式<span class="tag">1v1~1v5</span></button>
+      <button class="disabled" data-act="survival"><i class="bar"></i>生存模式<span class="tag">暂未开放</span></button>
+      <button class="disabled" data-act="campaign"><i class="bar"></i>战役模式<span class="tag">暂未开放</span></button>
+      <button data-act="settings"><i class="bar"></i>游戏设置<span class="tag">难度 · 画质</span></button>
+      <button data-act="audio"><i class="bar"></i>声音设置<span class="tag">音效 · 音乐</span></button>
+    </nav>
+  </div>
+
+  <div class="corner bl">Version 0.32<br>by cctank1024</div>
+  <div class="corner br">移动鼠标 &nbsp;环视画面<br>点击任意处 &nbsp;开启环境音</div>
+  <div id="toast"></div>
 </div>
 
-<!-- ══════════ 游戏设置 ══════════ -->
+<!-- ══════════ 游戏设置（与正式游戏共用 ironwar3_settings 存档） ══════════ -->
 <div id="modal-game" class="modal">
   <div class="modal-box">
     <div class="modal-title">游 戏 设 置</div>
@@ -86,305 +216,1663 @@
   </div>
 </div>
 
-<!-- ══════════ 操作说明 ══════════ -->
-<div id="modal-help" class="modal">
-  <div class="modal-box help-box">
-    <div class="modal-title">操 作 说 明</div>
-    <table id="help-table">
-      <tr><td>W / S</td><td>前进 / 倒车（油门平滑 · 惯性滑行）</td></tr>
-      <tr><td>A / D</td><td>车体转向</td></tr>
-      <tr><td>鼠标</td><td>炮塔瞄准（炮塔以自身转速追踪准星）</td></tr>
-      <tr><td>左键</td><td>主炮开火</td></tr>
-      <tr><td>右键</td><td>按住开瞄准镜；双档瞄具按 <b>Shift</b> 变倍</td></tr>
-      <tr><td>1 / 2 / 3</td><td>切换弹种（AP / HE / APCR 钨芯弹）</td></tr>
-      <tr><td>中键（按住）</td><td>同轴 / 车顶机枪连发</td></tr>
-      <tr><td>F（按住）</td><td>车体前机枪（射界内自动瞄准点亮目标）</td></tr>
-      <tr><td>Q</td><td>车长望远镜（Shift 切 7×/12×；观察不联动炮塔、禁火）</td></tr>
-      <tr><td>R / T</td><td>维修包 / 灭火器（每场各 1 次）</td></tr>
-      <tr><td>空格</td><td>制动刹车</td></tr>
-      <tr><td>C</td><td>自由观赏视角，再按返回</td></tr>
-      <tr><td>H</td><td>打开 / 关闭本说明</td></tr>
-      <tr><td>Esc</td><td>暂停 / 释放鼠标</td></tr>
-    </table>
-    <div class="help-tips">提示：600m 外目标需望远镜 / 瞄准镜持续照射约 2 秒确认点亮；歼击车无炮塔，需转向车体把目标带进射界（炮口指示器红脉动 = 未在射界）。</div>
-    <div class="modal-actions"><button class="menu-btn small" id="btn-help-close">返 回</button></div>
-  </div>
+<div id="loader">
+  <div class="ltitle">钢铁战线3</div>
+  <div class="lbar"><i id="lbarFill"></i></div>
+  <div class="lstep" id="lstep">正在集结装甲纵队 …</div>
 </div>
+<div id="err"><div>本页需要 WebGL2 与网络（加载 three.js CDN）。<br>请使用较新的 Chrome / Edge 打开。</div></div>
 
-<!-- ══════════ 车库（选车） ══════════ -->
-<div id="screen-hangar" class="screen">
-  <div class="fh-hint">滚轮缩放 · 拖拽旋转</div>
-  <div class="fh-pager">
-    <button class="fh-pager-btn" data-action="prev">‹</button>
-    <span class="fh-pager-name" id="fh-pager-name"></span>
-    <button class="fh-pager-btn" data-action="next">›</button>
-  </div>
-  <div class="fh-tanksel">
-    <select id="fh-sel-nation" title="阵营/国家"></select>
-    <select id="fh-sel-tank" title="坦克"></select>
-  </div>
-  <div class="fh-panel fh-panel-info">
-    <div class="fh-info-head">
-      <img id="fh-ac-flag" class="fh-flag" alt="">
-      <span class="fh-info-name" id="fh-ac-name"></span>
-      <span class="fh-info-sub" id="fh-ac-sub"></span>
-    </div>
-    <div class="fh-info-history" id="fh-ac-history"></div>
-    <div class="fh-spec-block">
-      <div class="fh-spec-title">性能参数</div>
-      <div class="fh-spec-list" id="fh-real-spec"></div>
-    </div>
-    <div class="fh-spec-block">
-      <div class="fh-spec-title">游戏属性</div>
-      <div class="fh-bars" id="fh-game-bars"></div>
-    </div>
-  </div>
-  <div class="fh-panel fh-panel-config">
-    <div class="fh-cfg-title">猎杀模式</div>
-    <div class="fh-cfg-preview" id="fh-preview-text"></div>
-    <div class="fh-diff-row" id="fh-count-row">
-      <span class="fh-diff-label">敌方编队</span>
-      <button class="fh-diff-btn fh-step-btn" id="fh-enemy-minus">−</button>
-      <span class="fh-enemy-count" id="fh-enemy-count">1 辆</span>
-      <button class="fh-diff-btn fh-step-btn" id="fh-enemy-plus">＋</button>
-    </div>
-    <div id="fh-enemy-list"></div>
-    <div class="fh-diff-row">
-      <span class="fh-diff-label">固定阵营</span>
-      <button class="fh-diff-btn active" id="fh-faction-lock">同盟 ↔ 轴心</button>
-    </div>
-    <div class="fh-diff-row" id="fh-diff-row">
-      <span class="fh-diff-label">AI 难度</span>
-      <button class="fh-diff-btn" data-diff="novice">新兵</button>
-      <button class="fh-diff-btn active" data-diff="standard">标准</button>
-      <button class="fh-diff-btn" data-diff="ace">王牌</button>
-    </div>
-    <div class="fh-diff-row" id="fh-map-row">
-      <span class="fh-diff-label">地图</span>
-      <select id="fh-map-select" class="fh-map-select">
-        <option value="kursk">库尔斯克 · 1943（东欧平原）</option>
-        <option value="normandy">诺曼底 · 1944（树篱田）</option>
-        <option value="ardennes">阿登森林 · 1944（雪林山地）</option>
-        <!-- <option value="prokhorovka">普罗霍罗夫卡 · 1943（冲沟台地）</option> -->
-      </select>
-    </div>
-    <button class="fh-start-btn" data-action="start">开 始 战 斗</button>
-  </div>
-  <button class="fh-back" data-action="back">‹ 返回</button>
-</div>
+<div id="page-fade" class="page-fade show"></div>
 
-<!-- ══════════ 战斗 HUD ══════════ -->
-<div id="hud" class="screen">
-  <!-- 车长望远镜（Q）：交叠双圆视野。位于 HUD 层最底（DOM 首位），不遮挡任何原有 UI 元素 -->
-  <div id="binoculars" class="hidden">
-    <svg id="bino-svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
-      <defs>
-        <mask id="bino-open">
-          <rect width="1000" height="1000" fill="#fff"/>
-          <circle cx="350" cy="500" r="280" fill="#000"/>
-          <circle cx="650" cy="500" r="280" fill="#000"/>
-        </mask>
-        <filter id="bino-feather" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="14"/>
-        </filter>
-      </defs>
-      <!-- 双圆并集外暗场（两圆相交，中央无线） -->
-      <rect width="1000" height="1000" fill="rgba(2,4,3,0.985)" mask="url(#bino-open)"/>
-      <!-- 羽化只沿并集外轮廓走（r=280 时两圆交于 (500,264)/(500,736)；左弧+右弧均取外侧大弧，颜色与暗场一致无缝融合） -->
-      <g filter="url(#bino-feather)">
-        <path d="M500,264 A280,280 0 1 0 500,736 A280,280 0 1 0 500,264 Z"
-              fill="none" stroke="rgba(2,4,3,0.985)" stroke-width="40"/>
-      </g>
-      <!-- 分划/铭文（整体 0.8 缩放） -->
-      <g transform="translate(500,500) scale(0.8) translate(-500,-500)">
-      <!-- 分划（中心公共区）：中心小十字 + 水平密位刻度 -->
-      <g stroke="rgba(8,10,6,.92)" fill="none" stroke-width="2" stroke-linecap="round">
-        <path d="M500,484 L500,516 M484,500 L516,500" stroke-width="2.2"/>
-        <path d="M340,500 L448,500 M552,500 L660,500" stroke-width="1.2"/>
-      </g>
-      <g stroke="rgba(8,10,6,.85)" stroke-width="1.4">
-        <path d="M400,494 L400,506 M450,492 L450,508 M550,492 L550,508 M600,494 L600,506"/>
-      </g>
-      <g fill="rgba(8,10,6,.85)" font-family="Consolas,monospace" font-size="14" text-anchor="middle">
-        <text x="400" y="526">10</text><text x="600" y="526">10</text>
-        <text x="450" y="530">5</text><text x="550" y="530">5</text>
-      </g>
-      <!-- 测距标识（左筒下部：2.7m 车高的密位阶梯 400/800/1200/1600m） -->
-      <g stroke="rgba(8,10,6,.85)" stroke-width="1.6" fill="none">
-        <path d="M288,640 L352,640 M296,668 L344,668 M304,692 L336,692 M312,714 L328,714"/>
-      </g>
-      <g fill="rgba(8,10,6,.85)" font-family="Consolas,monospace" font-size="12" text-anchor="start">
-        <text x="358" y="644">400</text><text x="350" y="672">800</text>
-        <text x="342" y="696">1200</text><text x="334" y="718">1600</text>
-      </g>
-      <!-- 右筒：倍率 + 型号铭文 -->
-      <text id="bino-mag" x="650" y="330" text-anchor="middle" fill="rgba(8,10,6,.9)" font-family="Consolas,monospace" font-size="22">7×</text>
-      <text x="650" y="352" text-anchor="middle" fill="rgba(8,10,6,.6)" font-family="Consolas,monospace" font-size="12">D.F. 7×50 / 12×</text>
-      <!-- 提示行 -->
-      <text x="500" y="830" text-anchor="middle" fill="rgba(230,235,220,.75)" font-size="15" letter-spacing="2">Q 退出 · Shift 切换 7×/12× · 仅观察</text>
-      </g>
-    </svg>
-  </div>
+<script type="module">
+import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-  <!-- 缩圈准星（表盘式径向刻度环，尺寸随散布变化；收敛中白色 → 缩圈完成变绿） -->
-  <div id="crosshair">
-    <svg class="ch-ring" viewBox="0 0 100 100"><g id="ch-ticks"></g></svg>
-    <div class="ch-dot"></div>
-    <div id="aim-progress"></div>
-    <div id="aim-info"><span id="aim-range">-- m</span> <span id="aim-target"></span></div>
-  </div>
-  <div id="gun-marker"></div>
-  <div id="hit-marker">✕</div>
-  <div id="pen-marker"></div>
+/* ================================================================
+   坦克大战 · 钢铁草原 — 开始菜单 Demo
+   场景做法沿用《长风》的分析结论：
+   ① 地形 = 解析高度函数（fBm 长浪 + 波动 + 土丘 + 远山隆起），变密度分离网格一次 draw call
+   ② 草地 = GPU 程序化三层中的两层（固定相机，tile 一次选取，CPU 零每帧开销）
+   ③ 风 = 一份统一阵风场（GLSL 与 JS 同公式），草浪 / 烟 / 尘 / 音效共享
+   ④ 光照 = 逆光黄金时刻：低角度暖阳 + 冷暖方向雾 + ACES
+   ⑤ 坦克 = 代码拼装低模（呼应 make_bismarck.py 的思路），零资产
+   ================================================================ */
 
-  <!-- 狙击瞄准镜（右键）：羽化边缘遮罩 + 史实分划（js/reticles.js） + 中心下方装填横条 -->
-  <div id="gunsight" class="hidden">
-    <svg id="gs-svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
-      <defs>
-        <radialGradient id="gs-vignette" cx="50%" cy="50%" r="50%">
-          <stop offset="0" stop-color="rgba(2,4,2,0)"/>
-          <stop offset="0.66" stop-color="rgba(2,4,2,0)"/>
-          <stop offset="0.80" stop-color="rgba(2,4,2,0.14)"/>
-          <stop offset="0.92" stop-color="rgba(2,4,2,0.78)"/>
-          <stop offset="1" stop-color="rgba(2,4,2,0.995)"/>
-        </radialGradient>
-      </defs>
-      <g id="gs-fit">
-      <rect width="1000" height="1000" fill="url(#gs-vignette)"/>
-      <!-- 圆形视野外黑幕（even-odd 挖洞 r=470；meet 适配时随 overflow:visible 覆盖两侧黑边） -->
-      <path d="M-1200,-1200 H2200 V2200 H-1200 Z M30,500 a470,470 0 1,0 940,0 a470,470 0 1,0 -940,0"
-            fill="#000" fill-rule="evenodd"/>
-      <g id="gs-reticle"></g>
-      </g>
-    </svg>
-      <div id="gs-disp"><svg class="gs-disp-ring" viewBox="0 0 100 100"><g id="gs-disp-ticks"></g></svg></div>
-      <!-- 装填圆环（刻度环左侧 30px：琥珀=装填中，绿=就绪，环内剩余秒数） -->
-      <svg id="reload-ring" viewBox="0 0 40 40">
-        <circle class="rr-track" cx="20" cy="20" r="16"/>
-        <circle class="rr-fill" cx="20" cy="20" r="16"/>
-        <text id="rr-sec" x="20" y="24">0.0</text>
-      </svg>
-      <div id="gs-readouts">
-        <div class="gs-ro" id="gs-shell">AP</div>
-        <div class="gs-ro" id="gs-reload">就绪</div>
-        <div class="gs-ro" id="gs-zoom">×2.5</div>
-        <div class="gs-ro" id="gs-range">-- m</div>
-        <div class="gs-ro" id="gs-target"></div>
-      </div>
-      <div id="gs-flash"></div>
-    </div>
+const $ = (s) => document.querySelector(s);
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+const sstep = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); };
+const hash2i = (ix, iz) => {
+  let h = (ix * 374761393 + iz * 668265263 + 1337 * 974711) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177); h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+};
+function vnoise(x, z) {
+  const ix = Math.floor(x), iz = Math.floor(z), fx = x - ix, fz = z - iz;
+  const u = fx * fx * (3 - 2 * fx), v = fz * fz * (3 - 2 * fz);
+  return lerp(lerp(hash2i(ix, iz), hash2i(ix + 1, iz), u),
+              lerp(hash2i(ix, iz + 1), hash2i(ix + 1, iz + 1), u), v) * 2 - 1;
+}
+function fbm(x, z, oct) {
+  let s = 0, a = 1, f = 1, n = 0;
+  for (let o = 0; o < oct; o++) { s += a * vnoise(x * f + o * 17.13, z * f - o * 9.71); n += a; a *= 0.5; f *= 2.03; }
+  return s / n;
+}
+function ridged(x, z, oct) {
+  let s = 0, a = 0.5, f = 1, w = 1, n = 0;
+  for (let o = 0; o < oct; o++) {
+    let h = 1 - Math.abs(vnoise(x * f + o * 17.3, z * f - o * 9.1));
+    h *= h; h *= w; w = Math.min(1, h * 1.6);
+    s += h * a; n += a; a *= 0.5; f *= 2.03;
+  }
+  return s / n;
+}
 
-  <!-- 敌标层（点亮标记/距离/▼；无血条——二战观瞄不可知敌伤） -->
-  <div id="markers"></div>
+/* ---------------- 构图常量（对照《长风》§1.3 的逆光构图法则） ---------------- */
+const SUN_DIR = new THREE.Vector3(-0.44, 0.13, -0.87).normalize(); // 夕阳低角度，坦克剪影拉长影
+const WIND = new THREE.Vector2(0.44, 0.88).normalize();             // 阵风锋面向镜头滚来
+const CAM_POS = new THREE.Vector3(5.7, 1.9, 4.7);
+const CAM_POS0 = new THREE.Vector3(8.4, 3.2, 8.2);                  // 开场推镜起点
+const CAM_TGT = new THREE.Vector3(-5, 1.4, -14.6);
+const FOV = 45.5;
 
-  <!-- 小地图 -->
-  <canvas id="minimap"></canvas>
-  <div id="help-hint">按 H 查看操作说明</div>
+/* ---------------- 全局大气 uniforms（暖冷方向雾 + 远处炮火闪光） ---------------- */
+const ATMO = {
+  uSunDir:  { value: SUN_DIR.clone() },
+  uFogWarm: { value: new THREE.Color(1.10, 0.55, 0.21) },
+  uFogCool: { value: new THREE.Color(0.32, 0.42, 0.50) },
+  uFogD:    { value: 0.00092 },
+  uHazeC:   { value: new THREE.Color(1.0, 0.55, 0.28) },
+  uFlash:   { value: 0 },
+};
+const ATMO_GLSL = /* glsl */`
+uniform vec3 uSunDir; uniform vec3 uFogWarm; uniform vec3 uFogCool;
+uniform float uFogD; uniform vec3 uHazeC; uniform float uFlash;
+vec3 applyAtmo(vec3 col, vec3 wp){
+  vec3 V = wp - cameraPosition; float d = length(V); vec3 rd = V / max(d, 1e-4);
+  float f = 1.0 - exp(-d * uFogD);
+  float sa = clamp(dot(rd, uSunDir) * 0.5 + 0.5, 0.0, 1.0);
+  vec3 fogc = mix(uFogCool, uFogWarm, pow(sa, 2.2));
+  float hz = exp(-max(wp.y, 0.0) * 0.05) * 0.22 * smoothstep(30.0, 260.0, d); // 远处贴地薄雾
+  f = clamp(f + hz * (1.0 - f), 0.0, 1.0);
+  vec3 o = mix(col, fogc, f);
+  o += uHazeC * uFlash * 0.55 * (0.22 + 0.78 * sa);     // 远处炮火点亮空气
+  return o;
+}`;
 
-  <!-- 弹药面板（左侧极简：字母+数字；AP/HE 点击切弹，ui.js 动态生成） -->
-  <div id="ammo-panel"></div>
+/* ---------------- 解析高度场（地形唯一事实来源） ---------------- */
+const TERR = { swell: 13, swellF: 0.0036, undul: 2.3, undulF: 0.014, hummock: 0.22, rim: 82 };
+let H00 = null;
+function H0(x, z) {
+  let h = TERR.swell * fbm(x * TERR.swellF, z * TERR.swellF, 4)
+        + TERR.undul * fbm(x * TERR.undulF + 31.7, z * TERR.undulF - 12.3, 2)
+        + TERR.hummock * fbm(x * 0.07 - 5.1, z * 0.07 + 8.9, 2);
+  const r = Math.hypot(x, z);
+  if (H00 === null) H00 = TERR.swell * fbm(0, 0, 4);
+  const site = sstep(120, 40, r);                       // 决斗场周围压平
+  if (site > 0) h = lerp(h, H00 + (h - H00) * 0.25, site);
+  if (r > 340) {                                        // 远处丘陵（ridged + smooth 混合，软上限）
+    const k = sstep(340, 1150, r);
+    let rim = (0.42 * ridged(x * 0.0021 + 3.3, z * 0.0021 - 7.7, 2)
+             + 0.58 * (0.5 + fbm(x * 0.0011 - 1.1, z * 0.0011 + 2.2, 2))) * TERR.rim * k;
+    const S = 70 + 30 * fbm(x * 0.002, z * 0.002, 2);
+    if (rim > 0.7 * S) rim = 0.7 * S + (rim - 0.7 * S) * 0.35;
+    h += rim;
+  }
+  h += 5 * sstep(170, 240, r) * (0.6 + 0.4 * fbm(x * 0.01, z * 0.01, 1)); // 可玩边界缓升
+  return h;
+}
 
+/* 车辙线（坦克开进来的叙事细节）：折线 → 地形顺势压出两条辙印 */
+const TRAILS = [
+  [[12, 3.8], [9.3, 2.6], [7.3, 1.3], [6.3, 0.6], [5.95, 0.37]],   // 虎式驶入线（接车尾）
+];
+function segDist(px, pz, ax, az, bx, bz) {
+  const dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz;
+  const t = clamp(((px - ax) * dx + (pz - az) * dz) / L2, 0, 1);
+  const ex = px - ax - dx * t, ez = pz - az - dz * t;
+  return Math.hypot(ex, ez);
+}
+function trailDist(x, z) {
+  let d = 1e9;
+  for (const P of TRAILS) for (let i = 0; i < P.length - 1; i++)
+    d = Math.min(d, segDist(x, z, P[i][0], P[i][1], P[i + 1][0], P[i + 1][1]));
+  return d;
+}
 
-  <div id="hud-bottom-left">
-    <div id="hp-panel">
-      <div id="hp-label">虎式</div>
-      <!-- 乘员状态（绿=完好 黄=受伤 灰=阵亡）：车长/炮手/装填手/驾驶员/通讯员 -->
-      <div id="crew-panel"></div>
-      <div id="status-tags"></div>
-      <div id="mod-chips"></div>
-    </div>
-  </div>
+/* ---------------- 关键地物位置 ---------------- */
+const TANKS = [
+  { x: 3.4,  z: -2.6,  yaw: -2.496, r: 2.6, glb: 'model/opt/tiger1.glb', h: 3.00, shadow: true, fb: 'kv2', bakeY: -Math.PI / 2 },  // 主角虎式（追尾视角；炮塔左转见 CAM_ADJ.tur）
+];
+// 远处战场硝烟（300m 外，连贯细长烟柱持续上升、顶端大范围扩散）
+const SMOKE_COLS = [
+  { x: -175, z: -185 },
+  { x: -75,  z: -295 },
+  { x: 15,   z: -330 },
+];
+const FLASHES = [[-165, -170], [-65, -280], [8, -315]];
+const TIGER_EXHAUST = [[0.3, 1.82, -3.05], [-0.28, 1.82, -3.06]];    // 虎式排气点（项目 config，斜向上管）
+const EXHAUST = [];   // 模型摆放后换算的世界坐标 {pos, local, seed}
+let HERO_GROUP = null, TIGER_ROOT = null;
 
-  <div id="hud-bottom-right">
-    <div id="speed-panel">
-      <div class="sp-label">THROTTLE</div>
-      <div class="sp-row"><span id="speed-val">0</span><span class="unit">km/h</span></div>
-      <div id="speed-bar"><div id="speed-fill"></div></div>
-    </div>
-    <div id="gear-panel"><span class="gp-label">GEAR</span> <span id="gear-val">N</span></div>
-  </div>
+// 镜头状态（py/ty 为"离地高"偏移；构建与主循环均从这里取值）
+const CAM_ADJ = {
+  px: CAM_POS.x, py: CAM_POS.y, pz: CAM_POS.z,
+  tx: CAM_TGT.x, ty: CAM_TGT.y, tz: CAM_TGT.z,
+  fov: FOV, yaw: TANKS[0].yaw,
+};
+const CAM = { V: new THREE.Vector3(), T: new THREE.Vector3() };   // 实时相机位/目标点
 
-  <!-- 车姿显示器（战雷式：炮塔朝上、车体按相对角旋转；受击 hull-local 短暂标记；内容由 ui.js 构建） -->
-  <div id="attitude"></div>
+/* ================================================================ 场景搭建 */
+let renderer, scene, camera;
+const quality = (() => {
+  const q = new URLSearchParams(location.search).get('q');
+  if (q) return q;
+  return (matchMedia('(pointer:coarse)').matches || innerWidth < 900) ? 'low' : 'high';
+})();
+const Q = quality === 'low' ? { dpr: 1.25, grassMul: 0.55, shadow: 1024, dust: 0, motes: 0 }
+                            : { dpr: 1.5, grassMul: 1.0,  shadow: 2048, dust: 1, motes: 110 };
 
-  <div id="hud-top">
-    <div id="objective">歼灭所有敌方坦克 <span class="en-label">ELIMINATE</span></div>
-    <div id="enemy-counter">敌方剩余 <span class="en-label">ENEMIES</span>: <b id="enemies-left">1</b></div>
-    <div id="time-counter">剩余时间 <span class="en-label">TIME</span>: <b id="time-left">10:00</b></div>
-    <div id="compass">
-      <div id="csWindow"><div id="csTicks"></div></div>
-      <div id="csNeedle"></div>
-      <div id="compassDeg">000°</div>
-    </div>
-  </div>
+const ACES = [
+  ['奥托·卡里乌斯', '击毁约 150 辆坦克（德国虎式王牌）'],
+  ['米哈伊尔·维特曼', '波卡基村一日击毁约 14 辆坦克（德国）'],
+  ['德米特里·拉夫里年科', '1941 年击毁 52 辆坦克（苏联）'],
+  ['瓦西里·奥什金', '1944 年桑多梅日伏击击毁 3 辆虎王（苏联）'],
+  ['拉斐特·普尔', '击毁约 12 辆坦克（美国坦克王牌）'],
+];
+const ace = ACES[Math.floor(Math.random() * ACES.length)];
+const progress = (() => {
+  let v = 0;
+  return async (p, label) => {
+    v = Math.max(v, p);
+    $('#lbarFill').style.width = (v * 100).toFixed(0) + '%';
+    $('#lstep').textContent = `二战坦克王牌 · ${ace[0]}｜战绩：${ace[1]}`;
+    // setTimeout 而非 rAF：后台标签页里 rAF 会被冻结
+    await new Promise(r => setTimeout(r, 16));
+  };
+})();
 
-  <!-- 暴露警示（被敌疑似/确认锁定时显示） -->
-  <div id="exposure-warn"></div>
+function patchAtmo(mat, extraVert) {
+  mat.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, ATMO);
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vWpos;')
+      .replace('#include <fog_vertex>', '#include <fog_vertex>\n vWpos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\n' + ATMO_GLSL + '\nvarying vec3 vWpos;')
+      .replace('#include <tonemapping_fragment>',
+               'gl_FragColor.rgb = applyAtmo(gl_FragColor.rgb, vWpos);\n#include <tonemapping_fragment>');
+  };
+  mat.fog = false;
+  return mat;
+}
 
-  <!-- 命中记录（右下，新事件底部出现向上推） -->
-  <div id="hitlog"></div>
+/* ---------------- 地形网格（0.8m 核心 → ±1.2km，一次 draw call） ---------------- */
+let GRID = null;
+function buildAxis() {
+  const pos = [0]; let x = 0, s = 0.8;
+  for (let i = 0; i < 160; i++) { x += s; pos.push(x); }
+  while (x < 1200 - 1e-3) { s *= 1.05; x = Math.min(1200, x + s); if (1200 - x < s * 0.35) x = 1200; pos.push(x); }
+  const neg = pos.slice(1).reverse().map(v => -v);
+  return Float64Array.from([...neg, ...pos]);
+}
+function heightAt(x, z) {           // 与渲染网格一致的三角插值
+  const g = GRID, xs = g.xs, n = g.n, H = g.H;
+  if (Math.abs(x) >= 1200 || Math.abs(z) >= 1200) return H0(x, z);
+  const locate = (v) => {
+    if (v >= -128 && v <= 128) {
+      const t = (v + 128) / 0.8; let i = Math.floor(t);
+      if (i >= 320) i = 319;
+      return { i: i + g.coreStart, f: t - i };
+    }
+    let lo = 0, hi = n - 1;
+    while (hi - lo > 1) { const m = (lo + hi) >> 1; if (xs[m] <= v) lo = m; else hi = m; }
+    return { i: lo, f: (v - xs[lo]) / (xs[lo + 1] - xs[lo]) };
+  };
+  const lx = locate(x), lz = locate(z);
+  const k = lz.i * n + lx.i, fx = lx.f, fz = lz.f;
+  const h00 = H[k], h10 = H[k + 1], h01 = H[k + n], h11 = H[k + n + 1];
+  if (((lx.i + lz.i) & 1) === 0)
+    return fx >= fz ? h00 + fx * (h10 - h00) + fz * (h11 - h10)
+                    : h00 + fz * (h01 - h00) + fx * (h11 - h01);
+  return fx + fz <= 1 ? h00 + fx * (h10 - h00) + fz * (h01 - h00)
+                      : h11 + (1 - fx) * (h01 - h11) + (1 - fz) * (h10 - h11);
+}
 
-  <!-- 消耗品（维修包 R / 灭火器 T） -->
-  <div id="consum-panel">
-    <div class="cons-item" id="cons-repair"><span class="cons-key">R</span><span class="cons-name">维修</span></div>
-    <div class="cons-item" id="cons-ext"><span class="cons-key">T</span><span class="cons-name">灭火</span></div>
-  </div>
+async function buildTerrain() {
+  const xs = buildAxis(), n = xs.length;
+  const H = new Float32Array(n * n);
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) H[j * n + i] = H0(xs[i], xs[j]);
+  const coreStart = (n - 1) / 2 - 160;
+  GRID = { xs, n, H, coreStart };
 
-  <div id="damage-vignette"></div>
-  <div id="damage-indicator"></div>
-  <!-- 修理读条（第三人称：屏幕最下方，装填条上方） -->
-  <div id="repair-wrap" style="display:none">
-    <div class="rp-label" id="repair-label">修理中</div>
-    <div class="rp-bar"><i id="repair-fill"></i></div>
-  </div>
-  <!-- 装填横条（第三人称：屏幕最下方） -->
-  <div id="reload-wrap-bottom">
-    <div class="rl-label" id="rl-bottom-label">主炮就绪</div>
-    <div class="rl-bar" id="reload-bar-bottom"><i></i></div>
-  </div>
-  <div id="battle-message"></div>
-</div>
+  // 顶点色：金黄草原生态（洼地偏绿 / 向阳偏金 / 辙印裸土 / 陡坡岩石）
+  const pos = new Float32Array(n * n * 3), nrm = new Float32Array(n * n * 3), col = new Float32Array(n * n * 3);
+  const C_GOLD = [0.155, 0.118, 0.045], C_GREEN = [0.09, 0.105, 0.035],
+        C_ROCK = [0.155, 0.145, 0.13], C_DIRT = [0.125, 0.098, 0.058];
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+    const k = j * n + i, x = xs[i], z = xs[j], h = H[k];
+    pos[k * 3] = x; pos[k * 3 + 1] = h; pos[k * 3 + 2] = z;
+    const i0 = Math.max(0, i - 1), i1 = Math.min(n - 1, i + 1);
+    const j0 = Math.max(0, j - 1), j1 = Math.min(n - 1, j + 1);
+    const dx = (H[j * n + i1] - H[j * n + i0]) / (xs[i1] - xs[i0]);
+    const dz = (H[j1 * n + i] - H[j0 * n + i]) / (xs[j1] - xs[j0]);
+    const il = 1 / Math.sqrt(dx * dx + 1 + dz * dz);
+    nrm[k * 3] = -dx * il; nrm[k * 3 + 1] = il; nrm[k * 3 + 2] = -dz * il;
 
-<!-- ══════════ 弃车（玩家无法战斗，强制确认） ══════════ -->
-<div id="screen-bail" class="screen">
-  <div id="pause-box">
-    <div id="pause-title" style="color:#ff7a5c">你已无法战斗</div>
-    <div style="color:#c8b89a;font-size:14px;margin:10px 0 4px;line-height:1.8">车组伤亡惨重，继续作战已不可能。<br>需要立即弃车。</div>
-    <div class="select-actions">
-      <button class="menu-btn primary" id="btn-bail-confirm">确认弃车</button>
-    </div>
-  </div>
-</div>
+    const moist = fbm(x * 0.017 + 7.7, z * 0.017 - 3.1, 3);
+    let r = lerp(C_GOLD[0], C_GREEN[0], sstep(-0.35, 0.55, moist));
+    let g = lerp(C_GOLD[1], C_GREEN[1], sstep(-0.35, 0.55, moist));
+    let b = lerp(C_GOLD[2], C_GREEN[2], sstep(-0.35, 0.55, moist));
+    const slope = 1 - il * (1 / il) * il; // (n.y)
+    const ny = nrm[k * 3 + 1];
+    if (ny < 0.86) { const t = sstep(0.86, 0.68, ny); r = lerp(r, C_ROCK[0], t); g = lerp(g, C_ROCK[1], t); b = lerp(b, C_ROCK[2], t); }
+    const td = trailDist(x, z);
+    if (td < 2.2) { const t = sstep(1.7, 0.35, td) * 0.85; r = lerp(r, C_DIRT[0], t); g = lerp(g, C_DIRT[1], t); b = lerp(b, C_DIRT[2], t); }
+    for (const T of TANKS) {                                     // 坦克下方压暗 + 裸土
+      const d2 = (x - T.x) ** 2 + (z - T.z) ** 2, rr = T.r * 1.5;
+      const ao = Math.exp(-d2 / (rr * rr));
+      const dirt = ao * 0.55;
+      r = lerp(r, C_DIRT[0], dirt); g = lerp(g, C_DIRT[1], dirt); b = lerp(b, C_DIRT[2], dirt);
+    }
+    const grain = 0.88 + 0.24 * hash2i(i * 7 + 13, j * 11 + 5);
+    col[k * 3] = r * grain; col[k * 3 + 1] = g * grain; col[k * 3 + 2] = b * grain;
+  }
+  const idx = new Uint32Array((n - 1) * (n - 1) * 6);
+  let o = 0;
+  for (let j = 0; j < n - 1; j++) for (let i = 0; i < n - 1; i++) {
+    const v00 = j * n + i, v10 = v00 + 1, v01 = v00 + n, v11 = v01 + 1;
+    if (((i + j) & 1) === 0) { idx[o++] = v00; idx[o++] = v01; idx[o++] = v11; idx[o++] = v00; idx[o++] = v11; idx[o++] = v10; }
+    else { idx[o++] = v00; idx[o++] = v01; idx[o++] = v10; idx[o++] = v10; idx[o++] = v01; idx[o++] = v11; }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  geo.setIndex(new THREE.BufferAttribute(idx, 1));
+  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1800);
 
-<!-- ══════════ 暂停 ══════════ -->
-<div id="screen-pause" class="screen">
-  <div id="pause-box">
-    <div id="pause-title">暂 停</div>
-    <div class="select-actions">
-      <button class="menu-btn primary" id="btn-pause-resume">返回游戏</button>
-      <button class="menu-btn small" id="btn-pause-help">操作说明</button>
-      <button class="menu-btn small" id="btn-pause-menu">退回首页</button>
-    </div>
-  </div>
-</div>
+  // 程序化细节贴图（灰度颗粒，重复铺）打破大面平色
+  const S = 256, data = new Uint8Array(S * S * 4);
+  for (let j = 0; j < S; j++) for (let i = 0; i < S; i++) {
+    const v = 200 + 55 * fbm(i * 0.09, j * 0.09, 3) + 20 * (hash2i(i, j) - 0.5);
+    const k = (j * S + i) * 4, c = clamp(v, 0, 255);
+    data[k] = data[k + 1] = data[k + 2] = c; data[k + 3] = 255;
+  }
+  const dtex = new THREE.DataTexture(data, S, S);
+  dtex.wrapS = dtex.wrapT = THREE.RepeatWrapping;
+  dtex.magFilter = THREE.LinearFilter;
+  dtex.minFilter = THREE.LinearMipmapLinearFilter;   // 远处必须走 mipmap，否则摩尔纹
+  dtex.generateMipmaps = true;
+  dtex.anisotropy = 4;
+  dtex.needsUpdate = true;
 
-<!-- ══════════ 结算 ══════════ -->
-<div id="screen-result" class="screen">
-  <div id="result-box">
-    <div id="result-title">胜 利</div>
-    <div id="result-detail"></div>
-    <div class="select-actions">
-      <button class="menu-btn small" id="btn-result-menu">返回主菜单</button>
-      <button class="menu-btn primary" id="btn-result-retry">再来一局</button>
-    </div>
-  </div>
-</div>
+  const mat = patchAtmo(new THREE.MeshStandardMaterial({
+    vertexColors: true, map: dtex, roughness: 1.0, metalness: 0,
+  }));
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.receiveShadow = true;
+  mesh.frustumCulled = false;
+  scene.add(mesh);
+}
 
-<div id="loading-overlay"><div class="load-text">正在装载战场资源…</div><div class="load-bar"><i id="load-fill"></i></div></div>
+/* ---------------- 车辙印（两条平行辙带贴地） ---------------- */
+function buildTrails() {
+  const pos = [], idx = []; let vi = 0;
+  for (const P of TRAILS) {
+    // 密集采样折线
+    const pts = [];
+    for (let i = 0; i < P.length - 1; i++) {
+      const [ax, az] = P[i], [bx, bz] = P[i + 1];
+      const L = Math.hypot(bx - ax, bz - az), k = Math.max(2, Math.ceil(L / 0.7));
+      for (let s = 0; s < k; s++) pts.push([ax + (bx - ax) * s / k, az + (bz - az) * s / k]);
+    }
+    pts.push(P[P.length - 1]);
+    // 每条辙带由两条边（±0.17m）围成；两辙中心 ±0.55m
+    const edges = [[-0.72, -0.38], [0.38, 0.72]];
+    const base = vi;
+    for (let i = 0; i < pts.length; i++) {
+      const [x, z] = pts[i];
+      const [px, pz] = pts[Math.min(i + 1, pts.length - 1)], [qx, qz] = pts[Math.max(i - 1, 0)];
+      const tx = px - qx, tz = pz - qz, L = Math.hypot(tx, tz) || 1;
+      const nx = -tz / L, nz = tx / L;
+      for (const [e0, e1] of edges) for (const e of [e0, e1])
+        pos.push(x + nx * e, heightAt(x + nx * e, z + nz * e) + 0.035, z + nz * e);
+    }
+    const n = pts.length;
+    for (const rut of [0, 2]) {
+      for (let i = 0; i < n - 1; i++) {
+        const a0 = base + i * 4 + rut, a1 = base + (i + 1) * 4 + rut;
+        const b0 = base + i * 4 + rut + 1, b1 = base + (i + 1) * 4 + rut + 1;
+        idx.push(a0, b0, a1, a1, b0, b1);
+      }
+    }
+    vi += n * 4;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setIndex(idx); geo.computeVertexNormals();
+  const mat = patchAtmo(new THREE.MeshStandardMaterial({ color: new THREE.Color(0.10, 0.082, 0.05), roughness: 1 }));
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.receiveShadow = true;
+  scene.add(mesh);
+}
 
-<!-- 机库/切车载入浮标 -->
-<div id="hangar-loading"><div class="hl-spinner"></div><div id="hangar-loading-text">载入机库…</div><div class="hl-bar"><i id="hangar-loading-fill"></i></div></div>
+/* ---------------- 草地：GPU 程序化两层（固定相机 tile 一次选取） ---------------- */
+const HM_N = 768, HM_SIZE = 153.6; // 草根高度图 ±76.8m
+let hmData = null;
+async function bakeHeightTex() {
+  hmData = new Float32Array(HM_N * HM_N);
+  for (let j = 0; j < HM_N; j++) for (let i = 0; i < HM_N; i++)
+    hmData[j * HM_N + i] = H0(-HM_SIZE / 2 + i * HM_SIZE / HM_N, -HM_SIZE / 2 + j * HM_SIZE / HM_N);
+}
+const TIERS = [
+  { name: 'L0', tile: 5,  k: 38, cap: 13, ring: [0, 1.5, 12.5, 14],  segs: 7, width: 1.0, order: -4 },
+  { name: 'L1', tile: 12, k: 44, cap: 24, ring: [11, 13.5, 38, 42], segs: 3, width: 1.8, order: -3 },
+  { name: 'L2', tile: 30, k: 48, cap: 18, ring: [36, 42, 112, 135], segs: 2, width: 3.4, order: -2 },
+];
+function bladeGeometry(segs) {
+  const pos = [], at = [], side = [], idx = [];
+  let vi = 0;
+  for (let r = 0; r < segs; r++) {
+    const t = r / segs;
+    pos.push(0, t, 0, 0, t, 0); at.push(t, t); side.push(-1, 1);
+    if (r > 0) { const a = vi - 2, b = vi - 1, c = vi, d = vi + 1; idx.push(a, b, d, a, d, c); }
+    vi += 2;
+  }
+  pos.push(0, 1, 0); at.push(1); side.push(0);
+  idx.push(vi - 2, vi - 1, vi);
+  const g = new THREE.InstancedBufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('aT', new THREE.Float32BufferAttribute(at, 1));
+  g.setAttribute('aSide', new THREE.Float32BufferAttribute(side, 1));
+  g.setIndex(idx);
+  return g;
+}
+function makeNoiseTex(S, oct) {
+  // 可平铺 value-noise fBm（R/G 双通道去相关）
+  const data = new Uint8Array(S * S * 4);
+  const per = (v, p) => ((v % p) + p) % p;
+  const vnt = (x, z, cells) => {
+    const ix = Math.floor(x), iz = Math.floor(z), fx = x - ix, fz = z - iz;
+    const u = fx * fx * (3 - 2 * fx), v = fz * fz * (3 - 2 * fz);
+    const h = (a, b) => hash2i(per(a, cells) * 31 + 7, per(b, cells) * 31 + 3);
+    return lerp(lerp(h(ix, iz), h(ix + 1, iz), u), lerp(h(ix, iz + 1), h(ix + 1, iz + 1), u), v);
+  };
+  for (let j = 0; j < S; j++) for (let i = 0; i < S; i++) {
+    const k = (j * S + i) * 4;
+    for (let c = 0; c < 2; c++) {
+      let s = 0, a = 0.5, cells = 16, n = 0;
+      for (let o = 0; o < oct; o++) { s += a * vnt((i / S) * cells + c * 9.7, (j / S) * cells - c * 4.3, cells); n += a; a *= 0.5; cells *= 2; }
+      data[k + c] = clamp((s / n) * 127 + 128, 0, 255);
+    }
+    data[k + 3] = 255;
+  }
+  const t = new THREE.DataTexture(data, S, S);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.needsUpdate = true;
+  return t;
+}
+const windTex = makeNoiseTex(256, 4);
 
-<script type="module" src="js/main.js"></script>
+const GRASS_COMMON = /* glsl */`
+uniform vec4 uTiles[32]; uniform float uK;
+uniform sampler2D uHm; uniform sampler2D uWindN;
+uniform vec2 uWindDir; uniform float uTime; uniform float uWidthMul;
+uniform vec3 uCamGround;
+uniform vec4 uAO[3];
+attribute float aT; attribute float aSide;
+varying float vT; varying float vBend; varying vec3 vNw; varying vec3 vWp; varying float vMoist;
+float hash12(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+vec2 hash22(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx + p3.yz) * p3.zy); }
+float vn2(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash12(i), hash12(i + vec2(1, 0)), u.x), mix(hash12(i + vec2(0, 1)), hash12(i + 1.0), u.x), u.y) * 2.0 - 1.0; }
+float gheight(vec2 p){
+  vec2 g = (p - vec2(${-HM_SIZE / 2})) / ${HM_SIZE} * ${HM_N}.0 - 0.5;
+  vec2 fl = floor(g), fr2 = g - fl;
+  ivec2 i0 = ivec2(clamp(fl, vec2(0.0), vec2(${HM_N - 1}.0)));
+  ivec2 i1 = ivec2(clamp(fl + 1.0, vec2(0.0), vec2(${HM_N - 1}.0)));
+  float h00 = texelFetch(uHm, i0, 0).r, h10 = texelFetch(uHm, ivec2(i1.x, i0.y), 0).r;
+  float h01 = texelFetch(uHm, ivec2(i0.x, i1.y), 0).r, h11 = texelFetch(uHm, i1, 0).r;
+  return mix(mix(h00, h10, fr2.x), mix(h01, h11, fr2.x), fr2.y);
+}
+float gust(vec2 wp){
+  float along = dot(wp, uWindDir);
+  float g = 0.55 + 0.45 * sin(uTime * 0.6 - along * 0.05) * (0.6 + 0.4 * sin(uTime * 0.19 + wp.x * 0.011 - wp.y * 0.013));
+  float n = texture2D(uWindN, (wp - uWindDir * uTime * 9.0) / 46.0).r;
+  return max(g * (0.6 + 0.8 * n), 0.08);
+}`;
+function grassMaterial(tier) {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uTiles: { value: new Float32Array(32 * 4) }, uK: { value: tier.k },
+      uHm: { value: hmTex }, uWindN: { value: windTex },
+      uWindDir: { value: WIND.clone() }, uTime: { value: 0 }, uWidthMul: { value: tier.width },
+      uAO: { value: [...TANKS.map(t => new THREE.Vector4(t.x, t.z, t.r, 1)),
+                     new THREE.Vector4(1e5, 1e5, 1, 1), new THREE.Vector4(1e5, 1e5, 1, 1)] },
+      uSunDir: ATMO.uSunDir, uFogWarm: ATMO.uFogWarm, uFogCool: ATMO.uFogCool,
+      uFogD: ATMO.uFogD, uHazeC: ATMO.uHazeC, uFlash: ATMO.uFlash,
+      uSunC: { value: new THREE.Color(3.35, 2.0, 1.05) },
+      uSkyC: { value: new THREE.Color(0.42, 0.55, 0.68) },
+      uGndC: { value: new THREE.Color(0.24, 0.155, 0.055) },
+    },
+    vertexShader: GRASS_COMMON + /* glsl */`
+      void main(){
+        int per = int(uK * uK);
+        int ti = gl_InstanceID / per;
+        int bi = gl_InstanceID - ti * per;
+        vec4 tile = uTiles[ti];
+        vec2 cell = vec2(float(bi % int(uK)), float(bi / int(uK)));
+        vec2 tc = floor(tile.xy / tile.z + 0.5);
+        vec2 j = hash22(tc * 127.1 + cell * 1.37);
+        vec2 root = tile.xy + (cell + j) * (tile.z / uK);
+        // 簇：0.7m 网格 3x3 最近抖动点 → 同簇共享朝向/高度/色相
+        vec2 cg = floor(root / 0.7);
+        vec2 cbest = cg; float bd2 = 1e9;
+        for (int a = -1; a <= 1; a++) for (int b = -1; b <= 1; b++) {
+          vec2 cid = cg + vec2(float(a), float(b));
+          vec2 cp = (cid + 0.5 + (hash22(cid * 7.13) - 0.5) * 0.8) * 0.7;
+          float dd = dot(cp - root, cp - root);
+          if (dd < bd2) { bd2 = dd; cbest = cid; }
+        }
+        float hc = hash12(cbest * 3.7);
+        vec2 cpos = (cbest + 0.5) * 0.7;
+        root = mix(root, cpos, 0.25);
+        float gr = gheight(root);
+        float moist = vn2(root * 0.045) * 0.5 + 0.5;
+        vMoist = moist;
+        float hhash = hash12(root * 91.7);
+        // 镜头近处留空
+        float camd = length(root - uCamGround.xz);
+        float keep = smoothstep(0.55, 1.1, camd);
+        // 坦克周围草被压平
+        vec2 bend = vec2(cos(hc * 6.2832 + (hash12(root * 7.3) - 0.5) * 1.2),
+                         sin(hc * 6.2832 + (hash12(root * 7.3) - 0.5) * 1.2));
+        bend *= mix(0.10, 0.4, hash12(root * 3.7));
+        float along = dot(root, uWindDir);
+        float g = gust(root);
+        float s01 = 0.5 + 0.5 * sin(uTime * 1.7 - along * 0.7 + hc * 6.28);
+        float flex = smoothstep(0.2, 1.0, 1.0) * 0.9 + 0.1;
+        bend += uWindDir * (0.30 + 0.55 * s01) * g * flex;
+        for (int i = 0; i < 3; i++) {
+          vec2 d = root - uAO[i].xy; float dd = length(d);
+          float f = 1.0 - smoothstep(0.3 * uAO[i].z, uAO[i].z, dd);
+          bend += (d / max(dd, 1e-4)) * f * 0.9;
+        }
+        float H = mix(0.30, 0.95, hhash) * (0.8 + 0.4 * hc) * mix(0.75, 1.2, moist);
+        float ang = min(length(bend), 1.45);
+        vec2 bd = bend / max(length(bend), 1e-4);
+        vec2 face = vec2(cos(hc * 6.2832), sin(hc * 6.2832));
+        vec3 P2 = vec3(bd.x * sin(ang), cos(ang), bd.y * sin(ang)) * H;
+        float curl = 0.4 + 0.6 * hash12(root + 9.3);
+        vec3 P1 = vec3(0.0, H * 0.62, 0.0) + vec3(bd.x, 0.0, bd.y) * H * 0.22 * curl;
+        float L = (2.0 * length(P2) + length(P1) + length(P2 - P1)) / 3.0;
+        P1 *= H / L; P2 *= H / L;
+        vec3 p = 2.0 * (1.0 - aT) * aT * P1 + aT * aT * P2;
+        vec3 tanw = normalize(2.0 * (1.0 - aT) * P1 + 2.0 * aT * (P2 - P1));
+        vec2 face2 = vec2(cos(hc * 6.2832 + (hash12(root * 7.3) - 0.5) * 1.2), sin(hc * 6.2832 + (hash12(root * 7.3) - 0.5) * 1.2));
+        vec3 sideV = normalize(vec3(-face2.y, 0.0, face2.x));
+        float w = (0.013 + 0.008 * hash12(root + 5.1)) * uWidthMul * (1.0 - 0.88 * pow(aT, 1.3));
+        vec3 Nf = normalize(cross(sideV, tanw));
+        vec3 base = vec3(root.x, gr - 0.015, root.y);
+        vec3 wp = base + p + sideV * aSide * w * 0.5;
+        vec3 Ndome = normalize(vec3(bd.x * 0.5 + (root.x - cpos.x) * 2.0, 0.8, bd.y * 0.5 + (root.y - cpos.y) * 2.0));
+        vec3 Nr = normalize(Nf + tanw * aSide * 0.35);
+        vNw = normalize(mix(Nr, Ndome, 0.45));
+        vT = aT; vBend = ang;
+        vWp = wp;
+        gl_Position = projectionMatrix * viewMatrix * vec4(wp, 1.0) * keep;
+      }`,
+    fragmentShader: ATMO_GLSL + /* glsl */`
+      uniform vec3 uSunC; uniform vec3 uSkyC; uniform vec3 uGndC; uniform vec2 uWindDir;
+      uniform vec4 uAO[3];
+      varying float vT; varying float vBend; varying vec3 vNw; varying vec3 vWp; varying float vMoist;
+      void main(){
+        vec3 root = vec3(0.035, 0.028, 0.010), mid = mix(vec3(0.26, 0.19, 0.06), vec3(0.12, 0.16, 0.04), vMoist);
+        vec3 tip = mix(vec3(0.62, 0.46, 0.16), vec3(0.30, 0.34, 0.09), vMoist);
+        vec3 alb = mix(root, mid, smoothstep(0.0, 0.55, vT));
+        alb = mix(alb, tip, smoothstep(0.45, 1.0, vT));
+        float ao = mix(0.40, 1.0, smoothstep(0.0, 0.55, vT));
+        for (int i = 0; i < 3; i++) {
+          float d = length(vWp.xz - uAO[i].xy);
+          ao *= 1.0 - 0.5 * exp(-(d * d) / (uAO[i].z * uAO[i].z));
+        }
+        vec3 N = normalize(vNw);
+        vec3 V = normalize(cameraPosition - vWp);
+        float ndl = clamp(dot(N, uSunDir), 0.0, 1.0);
+        float sunBack = clamp(dot(-uSunDir, N), 0.0, 1.0);
+        vec3 hemi = mix(uGndC, uSkyC, N.y * 0.5 + 0.5);
+        vec3 col = alb * hemi * 0.9 * ao + alb * uSunC * ndl * 0.85 * ao;
+        // 逆光透射：干草更饱和
+        vec3 trans = alb * vec3(1.05, 0.92, 0.70);
+        col += uSunC * trans * (sunBack * 1.7 + 0.2) * vT * ao;
+        // 稻波 honami：顺风亮带滚向镜头
+        col *= 1.0 + 0.35 * vBend * clamp(dot(uWindDir, normalize(-V.xz)) * 0.5 + 0.5, 0.0, 1.0);
+        col = applyAtmo(col, vWp);
+        gl_FragColor = vec4(col, 1.0);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }`,
+    side: THREE.DoubleSide,
+  });
+}
+let hmTex = null;
+const grassMeshes = [];
+async function buildGrass() {
+  // 草根高度贴图（R32F，shader 手动双线性）
+  hmTex = new THREE.DataTexture(hmData, HM_N, HM_N, THREE.RedFormat, THREE.FloatType);
+  hmTex.needsUpdate = true;
+  for (const tier of TIERS) {
+    const kMul = quality === 'low' ? 0.75 : 1.0;
+    const tk = Math.round(tier.k * Math.sqrt(Q.grassMul) * kMul);
+    const g = bladeGeometry(tier.segs);
+    const mat = grassMaterial(tier);
+    mat.uniforms.uK.value = tk;
+    mat.uniforms.uCamGround = { value: new THREE.Vector3(CAM_POS.x, 0, CAM_POS.z) };
+    const mesh = new THREE.Mesh(g, mat);
+    mesh.frustumCulled = false; mesh.castShadow = false; mesh.receiveShadow = false;
+    mesh.renderOrder = tier.order;
+    scene.add(mesh);
+    grassMeshes.push({ mesh, tier, tk });
+  }
+  // 固定相机 → tile 只选一次（带视差余量）
+  const camF = new THREE.PerspectiveCamera(FOV, 16 / 9, 0.1, 12000);
+  camF.position.copy(CAM_POS); camF.lookAt(CAM_TGT);
+  camF.updateMatrixWorld();
+  camF.matrixWorldInverse.copy(camF.matrixWorld).invert();  // 视锥剔除必须用逆视图矩阵
+  const proj = camF.projectionMatrix, view = camF.matrixWorldInverse;
+  const fr = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(proj, view));
+  const box = new THREE.Box3(), v = new THREE.Vector3();
+  for (const gm of grassMeshes) {
+    const { tier, tk } = gm, t = tier.tile;
+    const rIn = tier.ring[0] - 2, rOut = tier.ring[3] + 6;
+    const cand = [];
+    const i0 = Math.floor((CAM_POS.x - rOut) / t), i1 = Math.ceil((CAM_POS.x + rOut) / t);
+    const j0 = Math.floor((CAM_POS.z - rOut) / t), j1 = Math.ceil((CAM_POS.z + rOut) / t);
+    for (let jj = j0; jj <= j1; jj++) for (let ii = i0; ii <= i1; ii++) {
+      const x0 = ii * t, z0 = jj * t;
+      const cx = x0 + t / 2, cz = z0 + t / 2;
+      const d = Math.hypot(cx - CAM_POS.x, cz - CAM_POS.z) - t * 0.7071;
+      if (d > rOut || d + t * 0.7071 < rIn) continue;
+      box.min.set(x0, -20, z0); box.max.set(x0 + t, 6, z0 + t);
+      box.expandByScalar(4);
+      if (!fr.intersectsBox(box)) continue;
+      cand.push({ x: x0, z: z0, d: Math.hypot(cx - CAM_POS.x, cz - CAM_POS.z) });
+    }
+    cand.sort((a, b) => a.d - b.d);
+    const arr = gm.mesh.material.uniforms.uTiles.value;
+    const m = Math.min(cand.length, tier.cap);
+    for (let i = 0; i < m; i++) { arr[i * 4] = cand[i].x; arr[i * 4 + 1] = cand[i].z; arr[i * 4 + 2] = t; arr[i * 4 + 3] = 0; }
+    // 一个实例 = 一根草：实例数 = tile 数 × 每片 tile 草数
+    gm.mesh.geometry.instanceCount = m * tk * tk;
+  }
+}
+
+/* ---------------- 天空（程序化穹顶 + 绘制感云） ---------------- */
+let skyMat = null;
+function buildSky() {
+  const mat = new THREE.ShaderMaterial({
+    side: THREE.BackSide, depthWrite: false, fog: false,
+    uniforms: {
+      uSunDir: ATMO.uSunDir, uSunC: { value: new THREE.Color(5.4, 2.7, 1.15) },
+      uZen: { value: new THREE.Color(0.07, 0.14, 0.25) },
+      uUp: { value: new THREE.Color(0.22, 0.32, 0.43) },
+      uHorW: ATMO.uFogWarm, uHorC: ATMO.uFogCool, uFlash: ATMO.uFlash,
+      uTime: { value: 0 },
+    },
+    vertexShader: /* glsl */`
+      varying vec3 vRd;
+      void main(){
+        vRd = position;
+        vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        gl_Position = p.xyww;
+      }`,
+    fragmentShader: /* glsl */`
+      uniform vec3 uSunDir, uSunC, uZen, uUp, uHorW, uHorC;
+      uniform float uFlash, uTime;
+      varying vec3 vRd;
+      // ── 三层塑造云（结构移植自参考项目 maps.js 天空，换夕阳配色）──
+      float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float vnoise(vec2 p) {
+        vec2 i = floor(p); vec2 f = fract(p);
+        float a = hash21(i), b = hash21(i + vec2(1.0, 0.0));
+        float c = hash21(i + vec2(0.0, 1.0)), d = hash21(i + vec2(1.0, 1.0));
+        vec2 u = f * f * (3.0 - 2.0 * f);
+        return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+      }
+      float fbm(vec2 p) {
+        float v = 0.0; float a = 0.5;
+        mat2 rot = mat2(0.80, 0.60, -0.60, 0.80);   // 旋转 36.87° 去网格感
+        for (int i = 0; i < 5; i++) { v += a * vnoise(p); p = rot * p * 2.0; a *= 0.5; }
+        return v;
+      }
+      float hash13(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
+      float vnoise3(vec3 p) {
+        vec3 i = floor(p); vec3 f = fract(p);
+        vec3 u = f * f * (3.0 - 2.0 * f);
+        float n000 = hash13(i);
+        float n100 = hash13(i + vec3(1.0, 0.0, 0.0));
+        float n010 = hash13(i + vec3(0.0, 1.0, 0.0));
+        float n110 = hash13(i + vec3(1.0, 1.0, 0.0));
+        float n001 = hash13(i + vec3(0.0, 0.0, 1.0));
+        float n101 = hash13(i + vec3(1.0, 0.0, 1.0));
+        float n011 = hash13(i + vec3(0.0, 1.0, 1.0));
+        float n111 = hash13(i + vec3(1.0, 1.0, 1.0));
+        return mix(mix(mix(n000, n100, u.x), mix(n010, n110, u.x), u.y),
+                   mix(mix(n001, n101, u.x), mix(n011, n111, u.x), u.y), u.z);
+      }
+      float fbm3(vec3 p) {
+        float v = 0.0; float a = 0.5;
+        for (int i = 0; i < 5; i++) { v += a * vnoise3(p); p *= 2.02; a *= 0.5; }
+        return v;
+      }
+      void main(){
+        vec3 rd = normalize(vRd);
+        float h = clamp(rd.y, 0.0, 1.0);
+        float sd = max(dot(rd, uSunDir), 0.0);
+        float sa = clamp(dot(rd, uSunDir) * 0.5 + 0.5, 0.0, 1.0);
+        vec3 hor = mix(uHorC, uHorW, pow(sa, 2.0));
+        vec3 col = mix(hor, uUp, smoothstep(0.0, 0.22, h));
+        col = mix(col, uZen, smoothstep(0.22, 0.8, h));
+        // 日轮 + 夕阳光晕
+        col += uSunC * 0.8 * pow(sd, 220.0);
+        col += uSunC * 9.0 * smoothstep(0.99962, 0.99978, sd);
+        col += vec3(1.0, 0.60, 0.28) * pow(sd, 8.0) * 0.24 * (0.4 + 0.6 * exp(-7.0 * h));
+        col += uHorW * 0.10 * exp(-7.0 * h);
+        // 云的落日配色：向阳暖金 / 背光紫灰
+        float lit = smoothstep(0.10, 0.80, sd);
+        vec3 cLit = vec3(1.38, 0.84, 0.46);
+        vec3 cShade = vec3(0.42, 0.38, 0.46);
+        // 1. 地平线层云带（水平拉伸，随风缓漂，落日方向染橙）
+        if (rd.y < 0.35) {
+          float stretch = mix(3.5, 1.0, smoothstep(0.0, 0.25, rd.y));
+          vec2 cuv = rd.xz * stretch * 0.8 + vec2(uTime * 0.005, uTime * 0.0015);
+          float n = fbm(cuv);
+          float cloud = smoothstep(1.0 - 0.36 * 1.15, 1.0 - 0.36 * 0.25, n);
+          float band = smoothstep(0.32, 0.08, rd.y) * smoothstep(-0.08, 0.04, rd.y);
+          cloud *= band;
+          vec3 farCol = mix(cShade * 1.2, cLit, lit) + uSunC * 0.10 * pow(sd, 6.0);
+          col = mix(col, farCol, cloud * 0.88);
+        }
+        // 2. 中空层积云（主云层，向阳侧金边）
+        if (rd.y > 0.06 && rd.y < 0.75) {
+          vec2 cuv2 = rd.xz * 1.0 + vec2(uTime * 0.0035, uTime * 0.0010);
+          float n2 = fbm(cuv2 + vec2(7.3, 2.1));
+          float cloud2 = smoothstep(1.0 - 0.30 * 0.9, 1.0 - 0.30 * 0.3, n2);
+          float band2 = smoothstep(0.06, 0.25, rd.y) * smoothstep(0.75, 0.40, rd.y);
+          cloud2 *= band2;
+          vec3 midCol = mix(cShade, cLit, lit);
+          midCol += uSunC * 0.16 * pow(sd, 14.0);
+          col = mix(col, midCol, cloud2);
+        }
+        // 3. 天顶卷云（3D 噪声，球面连续无接缝）
+        if (rd.y > 0.25) {
+          vec3 c3 = rd * 3.0 + vec3(uTime * 0.002, 0.0, 0.0) + vec3(15.7, 8.2, 3.1);
+          float n3 = fbm3(c3);
+          float cloud3 = smoothstep(0.40, 0.60, n3);
+          float band3 = smoothstep(0.25, 0.45, rd.y) * smoothstep(1.50, 0.60, rd.y);
+          cloud3 *= band3 * 0.5;
+          vec3 highCol = mix(cShade * 1.1, cLit * 0.85, lit);
+          col = mix(col, highCol, cloud3);
+        }
+        col += uHorW * uFlash * 0.35 * (1.0 - h);   // 远处炮火照亮云底
+        // 穹底与远处雾化地面无缝衔接
+        col = mix(hor, col, smoothstep(-0.09, 0.015, vRd.y));
+        gl_FragColor = vec4(col, 1.0);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }`,
+  });
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(5000, 48, 24), mat);
+  sky.frustumCulled = false; sky.renderOrder = 10;
+  scene.add(sky);
+  skyMat = mat;
+}
+
+/* ---------------- 远山（程序化山脊环带：碎片级光照 + 空气透视，与草原共雾色） ---------------- */
+function buildMountains() {
+  const LAYERS = [
+    { R: 1750, H: 46,  base: -14, depth: 260, haze: 0.58, seed: 3.3,  snow: 0, kR: 2.2 },
+    { R: 2450, H: 70,  base: -28, depth: 380, haze: 0.70, seed: 7.7,  snow: 0, kR: 1.8 },
+    { R: 3250, H: 100, base: -48, depth: 470, haze: 0.82, seed: 11.1, snow: 0, kR: 1.5 },
+  ];
+  const sunAz = Math.atan2(SUN_DIR.x, SUN_DIR.z);
+  const SEG = 720, RINGS = 26, W = SEG + 1;
+
+  // 环向噪声：在噪声空间沿圆环取值 → 周向天然无缝
+  const ringR = (th, k, seed, oct) =>
+    ridged(Math.cos(th) * k + seed * 7.13, Math.sin(th) * k - seed * 3.71 + 11.7, oct);
+
+  for (const L of LAYERS) {
+    const grid = [];
+    for (let j = 0; j <= RINGS; j++) {
+      grid[j] = [];
+      const df = j / RINGS;
+      const ramp = Math.sin(Math.min(1, df * 2.3 + 0.04) * Math.PI / 2);
+      for (let i = 0; i < W; i++) {
+        const th = (i / SEG) * Math.PI * 2;
+        let az = th - sunAz; az = Math.atan2(Math.sin(az), Math.cos(az));
+        const profile = 0.6 + 0.4 * sstep(0.35, 1.25, Math.abs(az));  // 太阳方位留缺口
+        let ridge = ringR(th, L.kR, L.seed, 5);
+        ridge = Math.pow(ridge, 1.15);                                // 库尔斯克大平原：平缓起伏的山脊线
+        const crag = ringR(th, 9.5, L.seed * 1.7, 3);
+        const rvar = 0.55 + 0.45 * (0.5 + 0.5 * ringR(th, 1.8, L.seed * 2.3, 2));
+        const h = L.base + L.H * (0.35 + 0.85 * ridge + 0.05 * crag * sstep(0.25, 0.75, ridge)) * profile * ramp;
+        const r = L.R + L.depth * df * rvar;
+        grid[j][i] = [Math.cos(th) * r, h, Math.sin(th) * r];
+      }
+    }
+    const P = [], N = [], M = [], idx = [];
+    for (let j = 0; j <= RINGS; j++) for (let i = 0; i < W; i++) {
+      const p = grid[j][i];
+      P.push(p[0], p[1], p[2]);
+      const pa = grid[j][(i - 1 + W) % W], pb = grid[j][(i + 1) % W];
+      const pd = grid[Math.max(0, j - 1)][i], pu = grid[Math.min(RINGS, j + 1)][i];
+      const ux = pb[0] - pa[0], uy = pb[1] - pa[1], uz = pb[2] - pa[2];
+      const vx = pu[0] - pd[0], vy = pu[1] - pd[1], vz = pu[2] - pd[2];
+      let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+      if (nx * p[0] + nz * p[2] > 0) { nx = -nx; ny = -ny; nz = -nz; }   // 法线朝向圆心（相机）
+      const il = 1 / (Math.hypot(nx, ny, nz) || 1);
+      N.push(nx * il, ny * il, nz * il);
+      const relH = clamp((p[1] - L.base) / L.H, 0, 1);
+      M.push(relH, L.snow, L.haze);
+    }
+    for (let j = 0; j < RINGS; j++) for (let i = 0; i < SEG; i++) {
+      const a = j * W + i, b = a + 1, c = a + W, d = c + 1;
+      idx.push(a, c, b, b, c, d);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+    geo.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3));
+    geo.setAttribute('aM', new THREE.Float32BufferAttribute(M, 3));
+    geo.setIndex(idx);
+    const mat = new THREE.ShaderMaterial({
+      side: THREE.DoubleSide, fog: false,
+      uniforms: {
+        uSunDir: ATMO.uSunDir, uFogWarm: ATMO.uFogWarm, uFogCool: ATMO.uFogCool, uFlash: ATMO.uFlash,
+        uSunC: { value: new THREE.Color(2.6, 1.55, 0.8) }, uNoise: { value: windTex },
+      },
+      vertexShader: /* glsl */`
+        attribute vec3 aM;
+        varying vec3 vN; varying vec3 vWp; varying vec3 vM;
+        void main(){
+          vN = mat3(modelMatrix) * normal;
+          vec4 wp = modelMatrix * vec4(position, 1.0);
+          vWp = wp.xyz; vM = aM;
+          gl_Position = projectionMatrix * viewMatrix * wp;
+        }`,
+      fragmentShader: /* glsl */`
+        uniform vec3 uSunDir, uFogWarm, uFogCool, uSunC;
+        uniform float uFlash; uniform sampler2D uNoise;
+        varying vec3 vN; varying vec3 vWp; varying vec3 vM;
+        void main(){
+          vec3 N = normalize(vN); if (!gl_FrontFacing) N = -N;
+          float relH = vM.x, snowA = vM.y, hazeL = vM.z;
+          float n = texture2D(uNoise, vWp.xz * 0.0016).g;   // 大尺度表面斑驳
+          // 植被 → 岩石（按相对高度 + 坡度）
+          vec3 veg = vec3(0.045, 0.052, 0.046), rock = vec3(0.10, 0.094, 0.086);
+          float slope = 1.0 - N.y;
+          vec3 alb = mix(veg, rock, clamp(relH * 1.2 + slope * 1.4 + (n - 0.5) * 0.6, 0.0, 1.0));
+          alb *= 0.85 + 0.3 * n;
+          // 雪线：仅高山层，向阳面略少
+          float sn = smoothstep(0.58, 0.8, relH + (n - 0.5) * 0.3) * smoothstep(0.45, 0.62, N.y);
+          alb = mix(alb, vec3(0.50, 0.53, 0.60), sn * snowA);
+          // 光照：暖阳直射 + 冷天空环境
+          float ndl = clamp(dot(N, uSunDir), 0.0, 1.0);
+          vec3 amb = vec3(0.30, 0.38, 0.46) * (0.55 + 0.45 * N.y);
+          vec3 col = alb * (amb + uSunC * (0.25 + 0.75 * ndl) * 0.55);
+          // 空气透视：雾色随视线冷暖（与地面同一套雾色）→ 山与草原"在同一场空气里"
+          vec3 V = vWp - cameraPosition; float d = length(V); vec3 rd = V / max(d, 1e-4);
+          float sa = clamp(dot(rd, uSunDir) * 0.5 + 0.5, 0.0, 1.0);
+          vec3 hazeCol = mix(uFogCool, uFogWarm, pow(sa, 2.0));
+          float haze = clamp(hazeL * (0.8 + 0.45 * (1.0 - relH)) + uFlash * 0.18 * sa, 0.0, 0.965);
+          col = mix(col, hazeCol, haze);
+          gl_FragColor = vec4(col, 1.0);
+          #include <tonemapping_fragment>
+          #include <colorspace_fragment>
+        }`,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.renderOrder = 5; mesh.frustumCulled = false;
+    scene.add(mesh);
+  }
+}
+
+/* ---------------- 坦克（代码拼装低模，呼应 make_bismarck.py 思路） ---------------- */
+function colored(geo, c) {
+  const n = geo.attributes.position.count, col = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { col[i * 3] = c[0]; col[i * 3 + 1] = c[1]; col[i * 3 + 2] = c[2]; }
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  return geo;
+}
+function tf(geo, x, y, z, ry = 0, rx = 0, rz = 0) {
+  const m = new THREE.Matrix4()
+    .makeTranslation(x, y, z)
+    .multiply(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(rx, ry, rz)));
+  geo.applyMatrix4(m);
+  return geo;
+}
+function box(w, h, d, x, y, z, ry = 0, rx = 0, rz = 0) {
+  return tf(new THREE.BoxGeometry(w, h, d), x, y, z, ry, rx, rz);
+}
+function cyl(r0, r1, h, x, y, z, rx = 0, rz = 0, seg = 12) {
+  const g = new THREE.CylinderGeometry(r0, r1, h, seg);
+  if (rx) g.applyMatrix4(new THREE.Matrix4().makeRotationX(rx));
+  if (rz) g.applyMatrix4(new THREE.Matrix4().makeRotationZ(rz));
+  return tf(g, x, y, z);
+}
+/** KV-2 式重坦克：方脑袋大炮塔。局部 +X = 车头。 */
+function buildKV2() {
+  const OL = [0.085, 0.09, 0.055], OL2 = [0.075, 0.08, 0.05], DK = [0.028, 0.028, 0.026], DK2 = [0.04, 0.038, 0.032];
+  const parts = [];
+  // 车体
+  parts.push(colored(box(6.4, 0.72, 2.85, 0, 0.62, 0), OL));
+  parts.push(colored(box(6.1, 0.5, 2.55, -0.1, 1.18, 0), OL2));
+  parts.push(colored(box(1.5, 0.5, 2.5, 2.6, 1.05, 0, 0, 0.5), OL));       // 首上装甲斜面
+  // 履带 + 负重轮
+  for (const s of [-1, 1]) {
+    parts.push(colored(box(6.7, 0.9, 0.62, -0.05, 0.5, s * 1.42), DK));
+    parts.push(colored(box(6.9, 0.12, 0.72, -0.05, 1.0, s * 1.42), DK2));  // 挡泥板
+    for (let i = 0; i < 5; i++)
+      parts.push(colored(cyl(0.4, 0.4, 0.5, -2.5 + i * 1.25, 0.48, s * 1.42, 0, Math.PI / 2), DK2));
+  }
+  // KV-2 标志性巨大方炮塔（略收顶）
+  parts.push(colored(box(2.75, 1.35, 2.5, -0.55, 2.1, 0), OL));
+  parts.push(colored(box(2.35, 0.25, 2.1, -0.55, 2.85, 0), OL2));
+  parts.push(colored(box(0.6, 0.35, 0.9, 0.85, 2.15, 0), OL2));            // 炮盾座
+  parts.push(colored(cyl(0.13, 0.15, 3.1, 2.4, 2.15, 0, 0, Math.PI / 2, 10), DK));   // 152mm 短管
+  parts.push(colored(cyl(0.19, 0.17, 0.4, 3.95, 2.15, 0, 0, Math.PI / 2, 10), DK));  // 炮口制退器
+  parts.push(colored(cyl(0.28, 0.3, 0.12, -1.2, 2.98, 0, 0, 0, 10), DK2));           // 指挥塔盖
+  return mergeGeometries(parts);
+}
+/** T-34 式中坦克：低矮炮塔长管。 */
+function buildT34() {
+  const OL = [0.09, 0.095, 0.06], OL2 = [0.08, 0.085, 0.052], DK = [0.03, 0.03, 0.028], DK2 = [0.042, 0.04, 0.034];
+  const parts = [];
+  parts.push(colored(box(5.9, 0.7, 2.7, 0, 0.6, 0), OL));
+  parts.push(colored(box(5.6, 0.42, 2.4, -0.1, 1.12, 0), OL2));
+  parts.push(colored(box(1.6, 0.42, 2.35, 2.2, 1.0, 0, 0, 0.55), OL));
+  for (const s of [-1, 1]) {
+    parts.push(colored(box(6.2, 0.85, 0.58, -0.05, 0.48, s * 1.33), DK));
+    for (let i = 0; i < 5; i++)
+      parts.push(colored(cyl(0.38, 0.38, 0.46, -2.3 + i * 1.15, 0.46, s * 1.33, 0, Math.PI / 2), DK2));
+  }
+  const tur = [];  // 炮塔：六棱台
+  parts.push(colored(cyl(1.25, 0.95, 0.75, -0.5, 1.72, 0, 0, 0, 6), OL));
+  parts.push(colored(cyl(0.95, 0.95, 0.1, -0.5, 2.12, 0, 0, 0, 6), OL2));
+  parts.push(colored(cyl(0.09, 0.105, 3.4, 1.55, 1.78, 0, 0, Math.PI / 2, 10), DK));
+  parts.push(colored(cyl(0.15, 0.13, 0.32, 3.2, 1.78, 0, 0, Math.PI / 2, 10), DK));
+  return mergeGeometries(parts);
+}
+/* ---------------- 坦克（真实资产 model/opt/*.glb；加载失败回退程序化低模） ---------------- */
+async function buildTanks() {
+  const loader = new GLTFLoader();
+  const fbMat = patchAtmo(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.88, metalness: 0.05 }));
+  for (const T of TANKS) {
+    let placed = false;
+    if (T.glb) {
+      try {
+        const gltf = await loader.loadAsync(T.glb);
+        const root = gltf.scene;
+        if (T.bakeY) root.rotation.y = T.bakeY;   // 项目约定：+X 车头模型烘焙为 +Z 朝前
+        root.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(root);
+        const s = T.h / Math.max(0.01, box.max.y - box.min.y);   // 按车高归一化（虎王 3.09m / T-34-85 2.75m）
+        root.scale.setScalar(s);
+        root.updateMatrixWorld(true);
+        box.setFromObject(root);
+        root.position.y = -box.min.y;                             // 履带贴地（组内归零）
+        root.traverse((o) => {
+          if (o.isMesh) {
+            o.castShadow = T.shadow;
+            o.receiveShadow = true;
+            const ms = Array.isArray(o.material) ? o.material : [o.material];
+            for (const m of ms) if (m) { m.envMapIntensity = 0.65; patchAtmo(m); }
+          }
+        });
+        const g = new THREE.Group();
+        g.add(root);
+        g.position.set(T.x, heightAt(T.x, T.z), T.z);
+        g.rotation.y = T.yaw;    // 项目模型 +Z 朝前（虎王原生 +Z）
+        scene.add(g);
+        g.updateMatrixWorld(true);
+        // 排气口世界坐标。config 的 exhaustLocal 是烘焙后坐标(+z 前)，模型已带 bakeY 旋转：
+        // 先按项目约定逆变换回模型空间 (x,y,z)_baked → (z, y, -x)_model，再走 localToWorld
+        TIGER_ROOT = root; HERO_GROUP = g;
+        for (let i = 0; i < TIGER_EXHAUST.length; i++) {
+          const L = TIGER_EXHAUST[i];
+          const pLocal = new THREE.Vector3(L[2], L[1], -L[0]);
+          EXHAUST.push({ pos: root.localToWorld(pLocal.clone()), local: pLocal, seed: 17.31 + i * 7.31 });
+        }
+        if (new URLSearchParams(location.search).has('mark')) {
+          for (const e of EXHAUST) {
+            const s = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6), new THREE.MeshBasicMaterial({ color: 0xff2020 }));
+            s.position.copy(e.pos); scene.add(s);
+          }
+        }
+        placed = true;
+      } catch (err) {
+        console.warn('[home] GLB 加载失败，回退程序化低模：', T.glb, err);
+      }
+    }
+    if (!placed) {
+      const geo = T.fb === 'kv2' ? buildKV2() : buildT34();
+      const mesh = new THREE.Mesh(geo, fbMat);
+      mesh.position.set(T.x, heightAt(T.x, T.z), T.z);
+      mesh.rotation.y = T.yaw - Math.PI / 2;  // 程序化车头 +X：换算 +Z 朝向约定
+      mesh.castShadow = T.shadow;
+      mesh.receiveShadow = true;
+      scene.add(mesh);
+    }
+  }
+}
+
+/* ---------------- 远处战场硝烟 / 排气烟 / 浮尘 / 炮火闪光 ---------------- */
+/* ---------------- 排气口热气（移植自参考项目 js/heathaze.js：屏幕空间折射 · 零管线侵入） ---------------- */
+const VERT_HH = /* glsl */`
+  varying vec2 vLocal;
+  uniform float uHalf;
+  void main() {
+    vLocal = position.xy * uHalf;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const FRAG_HH = /* glsl */`
+  varying vec2 vLocal;
+  uniform sampler2D tCopy;
+  uniform vec2 uRes;
+  uniform vec2 uM2U;
+  uniform float uTime;
+  uniform float uRadius;
+  uniform float uStrength;
+  uniform float uAmp;
+  uniform float uSeed;
+  void main() {
+    vec2 p = vLocal;
+    p.y -= uRadius * 0.35;
+    float r = length(vec2(p.x / uRadius, p.y / (uRadius * 1.2)));
+    float k = uStrength * (1.0 - smoothstep(0.12, 1.0, r));
+    float ph = p.y * 16.0 - uTime * 7.0 + uSeed;
+    float w1 = sin(ph + sin(p.x * 21.0 + uTime * 2.3 + uSeed * 3.7) * 1.35);
+    float w2 = sin(ph * 0.47 + uTime * 2.9 + uSeed);
+    float w3 = sin(p.y * 23.0 + uTime * 5.2 + p.x * 11.0 + uSeed * 2.1);
+    vec2 disp = vec2(w1 * 0.62 + w2 * 0.48, w3 * 0.34) * (k * uAmp);
+    gl_FragColor = texture2D(tCopy, gl_FragCoord.xy / uRes + disp * uM2U);
+  }
+`;
+class HeatHaze {
+  constructor(renderer) {
+    this._gl = renderer.getContext();
+    this._rt = new THREE.WebGLRenderTarget(2, 2, {
+      format: THREE.RGBAFormat, type: THREE.UnsignedByteType,
+      minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+      depthBuffer: false, stencilBuffer: false,
+    });
+    this._rt.texture.generateMipmaps = false;
+    this._scene = new THREE.Scene();
+    this._quads = [];
+    for (let i = 0; i < 12; i++) {
+      const mat = new THREE.ShaderMaterial({
+        uniforms: {
+          tCopy: { value: this._rt.texture },
+          uRes: { value: new THREE.Vector2() },
+          uM2U: { value: new THREE.Vector2() },
+          uTime: { value: 0 },
+          uHalf: { value: 1 },
+          uRadius: { value: 0.35 },
+          uStrength: { value: 0 },
+          uAmp: { value: 0.07 },
+          uSeed: { value: 0 },
+        },
+        vertexShader: VERT_HH, fragmentShader: FRAG_HH,
+        depthTest: true, depthWrite: false, blending: THREE.NoBlending,
+      });
+      const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat);
+      quad.frustumCulled = false;
+      quad.visible = false;
+      this._scene.add(quad);
+      this._quads.push(quad);
+    }
+    this._n = 0;
+    this._sz = new THREE.Vector2();
+    this._tv = new THREE.Vector3();
+  }
+  beginFrame() { for (const q of this._quads) q.visible = false; this._n = 0; }
+  addSource(worldPos, radius, strength, seed, camera) {
+    if (this._n >= 12 || strength < 0.02) return;
+    this._tv.copy(worldPos).sub(camera.position);
+    const dist = Math.max(this._tv.length(), 1);
+    if (dist > 260) return;
+    this._tv.copy(worldPos).project(camera);
+    if (this._tv.z > 1 || Math.abs(this._tv.x) > 1.25 || Math.abs(this._tv.y) > 1.25) return;
+    const quad = this._quads[this._n];
+    quad.visible = true;
+    quad.position.copy(worldPos).lerp(camera.position, 0.08 / dist);
+    quad.quaternion.copy(camera.quaternion);
+    const half = radius * 1.75;
+    quad.scale.set(half, half, 1);
+    const u = quad.material.uniforms;
+    u.uHalf.value = half;
+    u.uRadius.value = radius;
+    u.uStrength.value = strength;
+    u.uSeed.value = seed;
+    const uy = 0.5 / (Math.tan(camera.fov * THREE.MathUtils.DEG2RAD * 0.5) * dist);
+    u.uM2U.value.set(uy / camera.aspect, uy);
+    this._n++;
+  }
+  draw(renderer, camera, time) {
+    if (this._n === 0) return;
+    renderer.getDrawingBufferSize(this._sz);
+    const w = this._sz.x, h = this._sz.y;
+    if (w === 0 || h === 0) return;
+    if (this._rt.width !== w || this._rt.height !== h) this._rt.setSize(w, h);
+    for (let i = 0; i < this._n; i++) {
+      const u = this._quads[i].material.uniforms;
+      u.uTime.value = time;
+      u.uRes.value.set(w, h);
+      u.uAmp.value = 0.07;
+    }
+    const gl = this._gl;
+    renderer.setRenderTarget(this._rt);
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+    gl.blitFramebuffer(0, 0, w, h, 0, 0, w, h, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+    renderer.setRenderTarget(null);
+    const ac = renderer.autoClear;
+    renderer.autoClear = false;
+    renderer.render(this._scene, camera);
+    renderer.autoClear = ac;
+  }
+}
+
+const smokeSprites = [], dustPts = { geo: null, vel: null };
+const exhaustPuffs = [], colSprites = [], fireGlows = [];
+/* 湍流烟团贴图：多子团叠加 + 模糊 + 边缘衰减（灰度，由材质 color 调深浅） */
+function smokePuffTex() {
+  const S = 256, cv = document.createElement('canvas'); cv.width = cv.height = S;
+  const ctx = cv.getContext('2d');
+  ctx.filter = 'blur(5px)';
+  for (let i = 0; i < 30; i++) {
+    const a = Math.random() * Math.PI * 2, d = Math.random() ** 1.4 * S * 0.30;
+    const x = S / 2 + Math.cos(a) * d, y = S / 2 + Math.sin(a) * d * 0.85;
+    const r = S * (0.055 + Math.random() * 0.10) * (1 - (d / (S * 0.5)) * 0.4);
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    const al = 0.22 + Math.random() * 0.42;
+    g.addColorStop(0, `rgba(255,255,255,${al})`);
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.filter = 'none';
+  const img = ctx.getImageData(0, 0, S, S), d = img.data;
+  for (let j = 0; j < S; j++) for (let i = 0; i < S; i++) {
+    const k = (j * S + i) * 4;
+    const dx = (i - S / 2) / (S / 2), dy = (j - S / 2) / (S / 2);
+    const r = Math.sqrt(dx * dx + dy * dy);
+    const fall = Math.max(0, 1 - Math.max(0, r - 0.5) / 0.5);
+    d[k] = d[k + 1] = d[k + 2] = 255;
+    d[k + 3] *= fall;
+  }
+  ctx.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+function radialTex(inner, outer, stops) {
+  const S = 128, cv = document.createElement('canvas'); cv.width = cv.height = S;
+  const ctx = cv.getContext('2d');
+  const g = ctx.createRadialGradient(S / 2, S / 2, inner * S / 2, S / 2, S / 2, outer * S / 2);
+  for (const [o, c] of stops) g.addColorStop(o, c);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+function buildFX() {
+  // —— 虎王排气烟（参考项目 effects.exhaustPuff 浅灰版，怠速节奏）——
+  const puffT = radialTex(0.15, 0.5, [[0, 'rgba(214,209,198,0.85)'], [0.5, 'rgba(194,188,176,0.5)'], [1, 'rgba(174,168,156,0)']]);
+  for (let i = 0; i < 30; i++) {
+    const m = new THREE.SpriteMaterial({ map: puffT, transparent: true, depthWrite: false, opacity: 0, fog: false });
+    m.color.setRGB(0.72, 0.70, 0.66);
+    const sp = new THREE.Sprite(m);
+    sp.visible = false;
+    scene.add(sp);
+    exhaustPuffs.push({ sp, age: 1, life: 1, vx: 0, vy: 0, vz: 0, s0: 0.5, s1: 2.2, a0: 0.32 });
+  }
+  // —— 远处战场硝烟柱（300m+：深色致密湍流烟，持续上升、顶端随风剪切扩散）——
+  const colT = smokePuffTex();
+  for (let c = 0; c < SMOKE_COLS.length; c++) {
+    const C = SMOKE_COLS[c];
+    const y0 = heightAt(C.x, C.z);
+    for (let i = 0; i < 24; i++) {
+      const m = new THREE.SpriteMaterial({ map: colT, transparent: true, depthWrite: false, opacity: 0, fog: false });
+      // 深浅两档：烟柱核心近黑、边缘团浅灰（参考图的高对比质感）
+      const lum = 0.10 + hash2i(c * 17 + i, 11) * 0.20;
+      m.color.setRGB(lum * 1.10 + 0.035, lum * 1.03 + 0.034, lum + 0.040);
+      m.rotation = hash2i(c * 5 + i, 9) * Math.PI * 2;
+      const sp = new THREE.Sprite(m);
+      sp.userData = { col: c, y0, t: i / 24, speed: 0.015 + hash2i(c * 31 + i, 5) * 0.006,
+                      jx: (hash2i(c * 7 + i, 3) - 0.5) * 7, spin: (hash2i(i + 1, c + 2) - 0.5) * 0.55,
+                      lum };
+      scene.add(sp); colSprites.push(sp);
+    }
+    // 柱底起火点的火光（闪烁）
+    const glowT = radialTex(0.03, 0.5, [[0, 'rgba(255,195,115,1)'], [0.4, 'rgba(255,125,45,0.5)'], [1, 'rgba(255,100,30,0)']]);
+    for (let k = 0; k < 2; k++) {
+      const m = new THREE.SpriteMaterial({ map: glowT, transparent: true, depthWrite: false, opacity: 0.35, blending: THREE.AdditiveBlending, fog: false });
+      const sp = new THREE.Sprite(m);
+      sp.position.set(C.x + (k - 0.5) * 7, y0 + 1.5, C.z + (hash2i(c, k) - 0.5) * 7);
+      sp.scale.setScalar(11 + k * 6);
+      scene.add(sp); fireGlows.push({ sp, ph: k * 2.1 + c * 1.7 });
+    }
+  }
+  // 炮口闪光 sprite（常驻，平时 opacity 0）
+  const flashTex = radialTex(0.02, 0.5, [[0, 'rgba(255,225,170,1)'], [0.3, 'rgba(255,175,85,0.5)'], [1, 'rgba(255,140,60,0)']]);
+  for (const [fx, fz] of FLASHES) {
+    const m = new THREE.SpriteMaterial({ map: flashTex, transparent: true, depthWrite: false, opacity: 0, blending: THREE.AdditiveBlending, fog: false });
+    const sp = new THREE.Sprite(m);
+    sp.position.set(fx, heightAt(fx, fz) + 12, fz);
+    sp.scale.setScalar(45);
+    scene.add(sp); smokeSprites.push(sp); sp.userData = { flash: true };
+  }
+  if (Q.motes) {
+    const N = Q.motes, p = new Float32Array(N * 3);
+    dustPts.vel = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+      p[i * 3] = CAM_POS.x + (hash2i(i, 1) - 0.5) * 44;
+      p[i * 3 + 1] = 0.3 + hash2i(i, 2) * 5;
+      p[i * 3 + 2] = CAM_POS.z - hash2i(i, 3) * 46;
+      dustPts.vel[i * 3] = 0.4 + hash2i(i, 4) * 0.5;
+      dustPts.vel[i * 3 + 1] = (hash2i(i, 5) - 0.5) * 0.3;
+      dustPts.vel[i * 3 + 2] = 0.7 + hash2i(i, 6) * 0.8;
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(p, 3));
+    dustPts.geo = g;
+    const m = new THREE.PointsMaterial({
+      color: 0xffd9a0, size: 0.045, sizeAttenuation: true, transparent: true,
+      opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+    });
+    const pts = new THREE.Points(g, m);
+    pts.frustumCulled = false;
+    scene.add(pts);
+  }
+}
+
+/* ---------------- 灯光 ---------------- */
+function buildLights() {
+  const sun = new THREE.DirectionalLight(new THREE.Color(1, 0.58, 0.28), 3.5);
+  sun.position.copy(SUN_DIR).multiplyScalar(300);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(Q.shadow, Q.shadow);
+  const sc = sun.shadow.camera;
+  sc.left = -15; sc.right = 15; sc.top = 15; sc.bottom = -15; sc.near = 150; sc.far = 550;
+  sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03; sun.shadow.radius = 3;
+  scene.add(sun); scene.add(sun.target);
+  const hemi = new THREE.HemisphereLight(new THREE.Color(0.42, 0.55, 0.68), new THREE.Color(0.24, 0.155, 0.055), 1.05);
+  scene.add(hemi);
+  const fill = new THREE.DirectionalLight(new THREE.Color(0.62, 0.60, 0.58), 0.55);
+  fill.position.set(0.44, 0.5, 0.87).multiplyScalar(200);
+  scene.add(fill);
+}
+
+/* ---------------- 音频（WebAudio 合成，无文件） ---------------- */
+const audio = {
+  ctx: null, master: null, on: false,
+  enable() {
+    if (this.ctx) { this.set(true); return; }
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return;
+    this.ctx = new C();
+    this.master = this.ctx.createGain(); this.master.gain.value = 0;
+    this.master.connect(this.ctx.destination);
+    // 风：棕噪声 → 低通 + 缓慢 LFO
+    const len = this.ctx.sampleRate * 4, buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    const d = buf.getChannelData(0); let last = 0;
+    for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; }
+    this.noiseBuf = buf;
+    const src = this.ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const lp = this.ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420; lp.Q.value = 0.4;
+    const g = this.ctx.createGain(); g.gain.value = 0.5;
+    const lfo = this.ctx.createOscillator(); lfo.frequency.value = 0.07;
+    const lfoG = this.ctx.createGain(); lfoG.gain.value = 0.22;
+    lfo.connect(lfoG); lfoG.connect(g.gain);
+    src.connect(lp); lp.connect(g); g.connect(this.master);
+    src.start(); lfo.start();
+    // 主页 BGM：项目自带菜单曲（文件缺失时静默跳过）
+    try {
+      const el = new Audio('bgm/end.mp3');
+      el.loop = true;
+      const msrc = this.ctx.createMediaElementSource(el);
+      const mg = this.ctx.createGain(); mg.gain.value = 0.3;
+      msrc.connect(mg); mg.connect(this.master);
+      el.play().catch(() => {});
+    } catch (e) { /* 无曲库 */ }
+    this.set(true);
+  },
+  set(v) { this.on = v; if (this.master) this.master.gain.linearRampToValueAtTime(v ? 0.5 : 0, this.ctx.currentTime + 0.4); },
+  rumble() {
+    if (!this.ctx || !this.on) return;
+    const t = this.ctx.currentTime;
+    const src = this.ctx.createBufferSource(); src.buffer = this.noiseBuf;
+    const lp = this.ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 90; lp.Q.value = 0.7;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.9, t + 0.06);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 2.8);
+    src.connect(lp); lp.connect(g); g.connect(this.master);
+    src.start(t, Math.random() * 2); src.stop(t + 3);
+    const o = this.ctx.createOscillator(); o.frequency.value = 42; o.type = 'sine';
+    const og = this.ctx.createGain();
+    og.gain.setValueAtTime(0.0001, t);
+    og.gain.exponentialRampToValueAtTime(0.5, t + 0.05);
+    og.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
+    o.connect(og); og.connect(this.master);
+    o.start(t); o.stop(t + 2.3);
+  },
+  blip(f = 1350) {
+    if (!this.ctx || !this.on) return;
+    const t = this.ctx.currentTime;
+    const o = this.ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = f;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.12, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+    o.connect(g); g.connect(this.master);
+    o.start(t); o.stop(t + 0.1);
+  },
+};
+
+/* ---------------- UI ---------------- */
+const toastEl = $('#toast');
+let toastTimer = 0;
+function toast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2400);
+}
+/* ---------------- 真实游戏设置（与 index.html 共用 ironwar3_settings） ---------------- */
+const gameSettings = (() => {
+  const def = { master: 80, sfx: 90, ambient: 60, quality: 'high', bgmOn: true, bgmVol: 30,
+    bgmMode: 'normal', difficulty: 'standard', enemyCount: 1, factionLock: true, mapId: 'kursk' };
+  try { return { ...def, ...JSON.parse(localStorage.getItem('ironwar3_settings') || '{}') }; }
+  catch (e) { return { ...def }; }
+})();
+function saveGameSettings() { localStorage.setItem('ironwar3_settings', JSON.stringify(gameSettings)); }
+function syncGameSettings() {
+  $('#set-difficulty').value = gameSettings.difficulty || 'standard';
+  $('#set-quality').value = gameSettings.quality || 'high';
+}
+function syncAudioSettings() {
+  for (const k of ['master', 'sfx', 'ambient']) {
+    $(`#set-${k}`).value = gameSettings[k];
+    $(`#val-${k}`).textContent = gameSettings[k];
+    $(`#set-${k}`).oninput = (e) => { $(`#val-${k}`).textContent = e.target.value; };
+  }
+  const tog = $('#set-bgm-toggle');
+  const syncTog = () => { tog.classList.toggle('on', gameSettings.bgmOn !== false); tog.textContent = gameSettings.bgmOn !== false ? '开' : '关'; };
+  syncTog();
+  tog.onclick = () => { gameSettings.bgmOn = gameSettings.bgmOn === false; syncTog(); };
+  $('#set-bgm').value = gameSettings.bgmVol ?? 30;
+  $('#val-bgm').textContent = gameSettings.bgmVol ?? 30;
+  $('#set-bgm').oninput = (e) => { $('#val-bgm').textContent = e.target.value; };
+  $('#set-bgm-personal').checked = gameSettings.bgmMode === 'personal';
+}
+function saveAndCloseSettings(kind) {
+  if (kind === 'game') {
+    gameSettings.difficulty = $('#set-difficulty').value;
+    gameSettings.quality = $('#set-quality').value;
+    $('#modal-game').classList.remove('active');
+  } else {
+    for (const k of ['master', 'sfx', 'ambient']) gameSettings[k] = +$(`#set-${k}`).value;
+    gameSettings.bgmVol = +$('#set-bgm').value;
+    gameSettings.bgmMode = $('#set-bgm-personal').checked ? 'personal' : 'normal';
+    $('#modal-audio').classList.remove('active');
+  }
+  saveGameSettings();
+  toast('设置已保存，进入战场后生效');
+}
+
+/* ---------------- 点赞 + 访问量（Cloudflare Pages Functions /api/stats） ---------------- */
+const homeStats = {
+  host: null, likeBtn: null, likeNum: null, viewNum: null,
+  _liked: false, _ready: false, _disposed: false,
+  mount(host) {
+    this.host = host;
+    if (!host) return;
+    this.likeBtn = host.querySelector('[data-stat="like"]');
+    this.likeNum = host.querySelector('[data-num="like"]');
+    this.viewNum = host.querySelector('[data-num="view"]');
+    try { this._liked = localStorage.getItem('iw3:home:liked') === '1'; } catch { /* 隐私模式 */ }
+    if (this._liked) this.likeBtn?.classList.add('on');
+    this.likeBtn?.addEventListener('click', () => this.like());
+    this._load();
+  },
+  async _load() {
+    const first = await this._req('GET');
+    if (this._disposed) return;
+    if (!first) { this._fail(); return; }
+    this._ready = true;
+    this._paint(first);
+    let viewed = false;
+    try { viewed = sessionStorage.getItem('iw3:home:viewed') === '1'; } catch { /* ignore */ }
+    if (viewed) return;
+    const after = await this._req('POST', { action: 'view' });
+    if (!after || this._disposed) return;
+    this._paint(after);
+    try { sessionStorage.setItem('iw3:home:viewed', '1'); } catch { /* ignore */ }
+  },
+  async like() {
+    if (!this._ready || this._liked || this._disposed) return;
+    this._liked = true;
+    this.likeBtn?.classList.add('on');          // 先上锁，避免连点重复提交
+    const data = await this._req('POST', { action: 'like' });
+    if (this._disposed) return;
+    if (!data) {                                // 失败回滚，允许再点
+      this._liked = false;
+      this.likeBtn?.classList.remove('on');
+      return;
+    }
+    this._paint(data);
+    try { localStorage.setItem('iw3:home:liked', '1'); } catch { /* ignore */ }
+  },
+  async _req(method, body) {
+    if (this._disposed) return null;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 6000);
+    try {
+      const res = await fetch('/api/stats', {
+        method,
+        headers: body ? { 'content-type': 'application/json' } : undefined,
+        body: body ? JSON.stringify(body) : undefined,
+        cache: 'no-store',
+        signal: ctrl.signal,
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  },
+  _paint(data) {
+    const fmt = (v) => (Number.isFinite(v) ? v.toLocaleString('en-US') : null);
+    const likes = fmt(data && data.likes);
+    const views = fmt(data && data.views);
+    if (likes && this.likeNum) this.likeNum.textContent = likes;
+    if (views && this.viewNum) this.viewNum.textContent = views;
+  },
+  _fail() {
+    this.host?.classList.add('is-offline');
+    if (this.likeBtn) this.likeBtn.disabled = true;
+  },
+};
+
+function wireUI() {
+  homeStats.mount(document.getElementById('homeStats'));
+  const ACT = {
+    hunt:   '「猎杀模式」— 进入战场（自由猎杀 1v1~1v5）',
+    survival: '「生存模式」— 暂未开放，敬请期待',
+    campaign: '「战役模式」— 暂未开放，敬请期待',
+    settings: '「游戏设置」— 进入游戏后在主菜单调整（AI 难度 / 画质）',
+    audio:  '「声音设置」— 进入游戏后在主菜单调整（音效 / 音乐）',
+  };
+  const btns = [...document.querySelectorAll('nav.menu button')];
+  let cur = 0;
+  btns.forEach((b, i) => {
+    b.addEventListener('mouseenter', () => { cur = i; audio.blip(1500); });
+    b.addEventListener('click', () => {
+      const act = b.dataset.act;
+      if (act === 'hunt') {           // 真实入口：黑场淡出后直达车库
+        audio.blip(900);
+        $('#page-fade').classList.add('show');
+        setTimeout(() => { location.href = 'game.html'; }, 650);
+        return;
+      }
+      if (act === 'settings') { syncGameSettings(); $('#modal-game').classList.add('active'); return; }
+      if (act === 'audio') { syncAudioSettings(); $('#modal-audio').classList.add('active'); return; }
+      audio.blip(900);
+      toast(ACT[act]);
+    });
+  });
+  addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { cur = (cur + 1) % btns.length; btns[cur].focus(); audio.blip(1500); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { cur = (cur + btns.length - 1) % btns.length; btns[cur].focus(); audio.blip(1500); e.preventDefault(); }
+  });
+  $('#btn-game-close').addEventListener('click', () => saveAndCloseSettings('game'));
+  $('#btn-audio-close').addEventListener('click', () => saveAndCloseSettings('audio'));
+  const snd = $('#sndBtn');
+  snd.addEventListener('click', () => {
+    audio.enable();
+    const on = !audio.on;
+    audio.set(on);
+    snd.classList.toggle('on', on);
+    snd.textContent = on ? '♪ 音效 开' : '♪ 音效 关';
+  });
+  addEventListener('pointerdown', () => { if (!audio.ctx) { audio.enable(); snd.classList.add('on'); snd.textContent = '♪ 音效 开'; } }, { once: true });
+}
+
+/* ---------------- 颗粒纹理（CSS 用） ---------------- */
+function makeGrain() {
+  const S = 128, cv = document.createElement('canvas'); cv.width = cv.height = S;
+  const ctx = cv.getContext('2d'), img = ctx.createImageData(S, S);
+  for (let i = 0; i < S * S; i++) {
+    const v = Math.random() * 255;
+    img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v; img.data[i * 4 + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  $('#grain').style.backgroundImage = `url(${cv.toDataURL()})`;
+}
+
+/* ================================================================ 主流程 */
+try {
+  renderer = new THREE.WebGLRenderer({ canvas: $('#c'), antialias: true, powerPreference: 'high-performance' });
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.06;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
+  renderer.setPixelRatio(Math.min(devicePixelRatio, Q.dpr));
+  renderer.setSize(innerWidth, innerHeight);
+  scene = new THREE.Scene();
+  // 环境反射：PBR 金属车体需要 env，否则高金属度区域发黑
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environmentIntensity = 0.28;
+  const heat = new HeatHaze(renderer);   // 排气口热气（屏幕空间折射）
+  scene.fog = new THREE.Fog(0xffffff, 1, 2);   // dummy：只为让 patchAtmo 的替换点存在
+  camera = new THREE.PerspectiveCamera(FOV, innerWidth / innerHeight, 0.1, 12000);
+  camera.position.copy(CAM_POS0);
+  camera.lookAt(CAM_TGT);
+
+  await progress(0.08, '天 · 天空与远山');
+  buildSky(); buildMountains(); buildLights();
+  await progress(0.2, '地 · 草原地形');
+  await buildTerrain(); buildTrails();
+  // 地形基准高度是噪声值（可能为负）：相机/注视点全部改为"离地"定义
+  CAM_POS.y = heightAt(CAM_POS.x, CAM_POS.z) + CAM_ADJ.py;
+  CAM_POS0.y = heightAt(CAM_POS0.x, CAM_POS0.z) + 3.2;
+  CAM_TGT.y = heightAt(CAM_TGT.x, CAM_TGT.z) + CAM_ADJ.ty;
+  CAM.V.copy(CAM_POS);
+  CAM.T.copy(CAM_TGT);
+  await progress(0.45, '草 · 风吹草浪');
+  await bakeHeightTex();
+  await buildGrass();
+  await progress(0.7, '钢 · 装甲集结');
+  await buildTanks(); buildFX();
+  await progress(0.9, '通讯 · 频道接通');
+  wireUI(); makeGrain();
+  await progress(1.0, '准备完毕');
+  // 与车库页同款黑场淡出：首页加载完成后平滑揭示
+  setTimeout(() => $('#page-fade').classList.remove('show'), 150);
+
+  /* ---------------- 相机 / 交互 / 循环 ---------------- */
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let mouse = { x: 0, y: 0 }, introT = new URLSearchParams(location.search).has('still') ? 1 : 0;
+  addEventListener('mousemove', (e) => {
+    mouse.x = (e.clientX / innerWidth) * 2 - 1;
+    mouse.y = (e.clientY / innerHeight) * 2 - 1;
+  });
+  addEventListener('resize', () => {
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+  });
+
+  // 远处炮火氛围（?war=0 关闭）：低强度的地平线暖光脉冲 + 延迟炮声
+  const warOff = new URLSearchParams(location.search).get('war') === '0';
+  let flashNext = warOff ? Infinity : 6, flashT = -1, flashPos = 0;
+  let _exhAcc = 0;
+  const clock = new THREE.Clock();
+
+  // 主循环：前台用 rAF；后台标签页 rAF 冻结，降级为定时器（后台 1fps 也足以保持画面有效）
+  let lastReal = performance.now();
+  function frame() {
+    lastReal = performance.now();
+    tick();
+    if (document.hidden) setTimeout(frame, 100);
+    else requestAnimationFrame(frame);
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) { clock.getDelta(); frame(); }
+  });
+  function tick() {
+    const dt = Math.min(clock.getDelta(), 0.05);
+    const t = clock.elapsedTime;
+    introT = Math.min(introT + dt, 1);
+    const k = sstep(0, 1, introT);           // 开场推镜
+    const drift = reduced ? 0 : 1;
+    camera.position.copy(CAM_POS0).lerp(CAM.V, k);
+    camera.position.x += Math.sin(t * 0.28) * 0.06 * drift + mouse.x * 0.28 * k * drift;
+    camera.position.y += Math.sin(t * 0.21) * 0.03 * drift - mouse.y * 0.12 * k * drift;
+    camera.lookAt(CAM.T);
+    camera.rotation.z += Math.sin(t * 0.17) * 0.0022 * drift;   // 极轻微手持感
+    camera.rotation.y += mouse.x * 0.022 * k * drift;
+    camera.rotation.x += -mouse.y * 0.011 * k * drift;
+    if (Math.abs(camera.fov - CAM_ADJ.fov) > 0.01) { camera.fov = CAM_ADJ.fov; camera.updateProjectionMatrix(); }
+
+    // 草地 / 天空时间
+    for (const gm of grassMeshes) gm.mesh.material.uniforms.uTime.value = t;
+    if (skyMat) skyMat.uniforms.uTime.value = t;
+    // 排气口热气（参考项目 heathaze：屏幕空间背景折射）
+    heat.beginFrame();
+    const hStr = 0.27 + 0.08 * Math.sin(t * 2.1) + 0.04 * Math.sin(t * 5.3);   // 怠速热浪（可见）
+    for (const e of EXHAUST) heat.addSource(e.pos, 0.34, hStr, e.seed, camera);
+
+    // 虎王排气：怠速节奏从双排气口喷出浅灰烟团（风带飘移）
+    _exhAcc += dt;
+    while (_exhAcc > 0.25) {
+      _exhAcc -= 0.25;
+      for (let i = 0; i < EXHAUST.length; i++) {
+        const p = exhaustPuffs.find(q => q.age >= q.life);
+        if (!p) break;
+        const e = EXHAUST[i];
+        p.age = 0;
+        p.life = 1.0 + Math.random() * 0.8;
+        p.sp.position.copy(e.pos);
+        p.sp.position.x += (Math.random() - 0.5) * 0.15;
+        p.sp.position.z += (Math.random() - 0.5) * 0.15;
+        p.vx = (Math.random() - 0.5) * 0.7 - WIND.x * 0.35;
+        p.vz = (Math.random() - 0.5) * 0.7 - WIND.y * 0.35;
+        p.vy = 1.3 + Math.random() * 1.0;
+        p.s0 = 0.3 + Math.random() * 0.14;
+        p.s1 = 2.0 + Math.random() * 0.9;
+        p.a0 = 0.30;
+        p.sp.visible = true;
+      }
+    }
+    for (const p of exhaustPuffs) {
+      if (p.age >= p.life) { p.sp.visible = false; continue; }
+      p.age += dt;
+      const tt = Math.min(p.age / p.life, 1);
+      p.vy *= (1 - 1.6 * dt);
+      p.sp.position.x += (p.vx + WIND.x * 0.6) * dt;
+      p.sp.position.y += p.vy * dt;
+      p.sp.position.z += (p.vz + WIND.y * 0.6) * dt;
+      p.sp.scale.setScalar(p.s0 + (p.s1 - p.s0) * tt);
+      p.sp.material.opacity = p.a0 * Math.min(tt / 0.12, 1) * (1 - tt) ** 1.3;
+    }
+    // 远处战场硝烟：湍流烟团连续上升，随风剪切漂移，边升边膨胀旋转
+    for (const sp of colSprites) {
+      const u = sp.userData;
+      u.t += dt * u.speed;
+      if (u.t > 1) u.t -= 1;
+      const tt = u.t;
+      const C = SMOKE_COLS[u.col];
+      const sway = Math.sin(tt * 6.3 + u.col * 3 + u.lum * 24) * (1.2 + tt * 9);
+      sp.position.set(
+        C.x + u.jx + WIND.x * (5 + tt * 85) + sway,       // 顶端随风剪切漂移
+        u.y0 + 3 + tt * 125,
+        C.z + WIND.y * (5 + tt * 85)
+      );
+      const w = 10 + tt * 52;                             // 越升越扩散
+      sp.scale.set(w, w * 1.5, 1);
+      sp.material.rotation += u.spin * dt;
+      sp.material.opacity = (0.36 + 0.40 * (1 - tt)) * Math.min(tt / 0.05, 1) * (1 - tt) ** 0.45;
+    }
+    // 硝烟柱底部的起火火光（闪烁）
+    for (const f of fireGlows)
+      f.sp.material.opacity = 0.26 + 0.16 * Math.sin(t * 11 + f.ph) * Math.sin(t * 4.7 + f.ph * 2.3);
+    // 浮尘
+    if (dustPts.geo) {
+      const p = dustPts.geo.attributes.position.array;
+      for (let i = 0; i < p.length / 3; i++) {
+        p[i * 3] += dustPts.vel[i * 3] * dt * 2.2;
+        p[i * 3 + 1] += dustPts.vel[i * 3 + 1] * dt;
+        p[i * 3 + 2] += dustPts.vel[i * 3 + 2] * dt * 2.2;
+        const dx = p[i * 3] - CAM_POS.x, dz = p[i * 3 + 2] - CAM_POS.z;
+        if (dx > 22) p[i * 3] -= 44; if (dx < -22) p[i * 3] += 44;
+        if (dz > 24) p[i * 3 + 2] -= 48; if (dz < -24) p[i * 3 + 2] += 48;
+        if (p[i * 3 + 1] > 6) p[i * 3 + 1] = 0.2; if (p[i * 3 + 1] < 0) p[i * 3 + 1] = 5.8;
+      }
+      dustPts.geo.attributes.position.needsUpdate = true;
+    }
+    // 远处炮火：闪光 + 延迟炮声
+    if (t > flashNext) {
+      flashNext = t + 12 + Math.random() * 14;
+      flashT = 0; flashPos = Math.floor(Math.random() * FLASHES.length);
+    }
+    if (flashT >= 0) {
+      flashT += dt;
+      const ft = flashT;
+      const f = ft < 0.09 ? ft / 0.09 : Math.exp(-(ft - 0.09) * 4.2);
+      ATMO.uFlash.value = f * 0.35;
+      const flashSprites = smokeSprites.filter((s) => s.userData.flash);
+      flashSprites.forEach((s, i) => { s.material.opacity = (i === flashPos ? 0.55 : 0) * f; });
+      if (ft > 0.75 && ft - dt <= 0.75) audio.rumble();
+      if (ft > 2) { flashT = -1; ATMO.uFlash.value = 0; flashSprites.forEach((s) => s.material.opacity = 0); }
+    }
+    renderer.render(scene, camera);
+    heat.draw(renderer, camera, t);   // 热气折射叠加在最终画布上
+    window.__dbg = {
+      cam: camera.position.toArray().map(v => +v.toFixed(2)),
+      tanks: TANKS.map(T => ({ x: T.x, z: T.z, y: +heightAt(T.x, T.z).toFixed(2) })),
+      exhaust: EXHAUST.map(e => e.pos.toArray().map(v => +v.toFixed(2))),
+      grass: grassMeshes.map(g => ({ tier: g.tier.name, inst: g.mesh.geometry.instanceCount, tiles: (() => { const a = g.mesh.material.uniforms.uTiles.value; let n = 0; for (let i = 0; i < 32; i++) if (a[i * 4 + 2] > 0) n++; return n; })() })),
+      info: { calls: renderer.info.render.calls, tris: renderer.info.render.triangles },
+    };
+    // 调试截图：同任务内先 render 再读回，绕开后台标签的合成截屏问题
+    window.__shot = () => { renderer.render(scene, camera); return renderer.domElement.toDataURL('image/jpeg', 0.85); };
+  }
+  frame();
+
+  /* ---------------- 入场编排 ---------------- */
+  setTimeout(() => {
+    $('#loader').classList.add('hide');
+    setTimeout(() => { $('#loader').style.display = 'none'; }, 1100);
+    document.querySelectorAll('h1 span').forEach((s, i) => setTimeout(() => s.classList.add('in'), 300 + i * 130));
+    setTimeout(() => { $('.entitle').classList.add('in'); $('.rule').classList.add('in'); }, 700);
+    setTimeout(() => { document.querySelectorAll('nav.menu button').forEach((b, i) => setTimeout(() => b.classList.add('in'), i * 90)); }, 1400);
+    setTimeout(() => { $('.bl').classList.add('in'); $('.br').classList.add('in'); $('.tl').classList.add('in'); $('.tr').classList.add('in'); }, 2100);
+  }, 350);
+} catch (err) {
+  console.error(err);
+  $('#page-fade').classList.remove('show');
+  $('#loader').style.display = 'none';
+  $('#err').style.display = 'grid';
+  $('#err').querySelector('div').textContent = '初始化失败：' + (err?.message ?? err);
+}
+</script>
 </body>
 </html>
